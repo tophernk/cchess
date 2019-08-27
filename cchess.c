@@ -5,14 +5,14 @@
 #define PAWN_W 1
 #define KNIGHT_W 2
 #define BISHOP_W 3
-#define ROUGE_W 5
+#define ROOK_W 5
 #define QUEEN_W 9
 #define KING_W 10
 
 #define PAWN_B 11
 #define KNIGHT_B 12
 #define BISHOP_B 13
-#define ROUGE_B 15
+#define ROOK_B 15
 #define QUEEN_B 19
 #define KING_B 20
 
@@ -36,14 +36,14 @@ void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
 
 int main() {
     int board[BOARD_SIZE][BOARD_SIZE] = {
-        { ROUGE_B, KNIGHT_B, BISHOP_B, QUEEN_B, KING_B, BISHOP_B, KNIGHT_B, ROUGE_B },
+        { ROOK_B, KNIGHT_B, BISHOP_B, QUEEN_B, KING_B, BISHOP_B, KNIGHT_B, ROOK_B },
         { PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W },
-        { ROUGE_W, KNIGHT_W, BISHOP_W, QUEEN_W, KING_W, BISHOP_W, KNIGHT_W, ROUGE_W }
+        { ROOK_W, KNIGHT_W, BISHOP_W, QUEEN_W, KING_W, BISHOP_W, KNIGHT_W, ROOK_W }
     };
 
     printBoard(board);
