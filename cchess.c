@@ -7,32 +7,22 @@
 #define BISHOP_W 3
 #define ROOK_W 5
 #define QUEEN_W 9
-#define KING_W 10
+#define KING_W 6
 
 #define PAWN_B 11
 #define KNIGHT_B 12
 #define BISHOP_B 13
 #define ROOK_B 15
 #define QUEEN_B 19
-#define KING_B 20
-
-#define a 0
-#define b 1
-#define c 2
-#define d 3
-#define e 4
-#define f 5
-#define g 6 
-#define h 7
+#define KING_B 16
 
 #define FILE_OFFSET 'a'
 #define ROW_OFFSET 1
 
-static int characterMap[8] = {
-    a, b, c, d, e, f, g, h
-};
-
 void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
+void printSolidLine();
+void printIntermediateLine();
+void printPiece(int);
 
 int main() {
     int board[BOARD_SIZE][BOARD_SIZE] = {
@@ -66,9 +56,48 @@ int main() {
 
 void printBoard(int board_copy[8][8]) {
     for(int x = 0; x < BOARD_SIZE; x++) {
+        printSolidLine();
+        printIntermediateLine();
         for(int y = 0; y < BOARD_SIZE; y++) {
-            printf("%d", board_copy[x][y]);
+            printPiece(board_copy[x][y]);
         }
         printf("\n");
+        printIntermediateLine();
+    }
+    printSolidLine();
+}
+
+void printSolidLine() {
+    for(int i = 0; i < BOARD_SIZE * 8; i++) {
+            printf("#");
+        }
+        printf("\n");
+    }
+
+void printIntermediateLine() {
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        printf("#       ");
+    }
+    printf("\n");
+}
+
+void printPiece(int p) {
+    printf("#   ");
+
+    switch(p % 10) {
+        case 1: printf("P"); break;
+        case 2: printf("N"); break;
+        case 3: printf("B"); break;
+        case 5: printf("R"); break;
+        case 9: printf("Q"); break;
+        case 6: printf("K"); break;
+        default: printf(" ");
+    };
+
+    if(p > 10) {
+        printf("*  ");
+    }
+    else {
+        printf("   ");
     }
 }
