@@ -17,15 +17,16 @@
 #define KING_B 16
 
 #define FILE_OFFSET 'a'
-#define ROW_OFFSET 1
 
 void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(int);
+int movePiece(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
+int isBoardPosition(int, int);
 
 int main() {
-    int board[BOARD_SIZE][BOARD_SIZE] = {
+    static int board[BOARD_SIZE][BOARD_SIZE] = {
         { ROOK_B, KNIGHT_B, BISHOP_B, QUEEN_B, KING_B, BISHOP_B, KNIGHT_B, ROOK_B },
         { PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -46,20 +47,41 @@ int main() {
     pos1_x -= FILE_OFFSET;
     pos2_x -= FILE_OFFSET;
 
-    pos1_y -= ROW_OFFSET;
-    pos2_y -= ROW_OFFSET;
+    pos1_y = (pos1_y - BOARD_SIZE) * -1;
+    pos2_y = (pos2_y - BOARD_SIZE) * -1;
 
-    printf("%d %d %d %d\n", pos1_x, pos1_y, pos2_x, pos2_y);
+    printf("%d %d %d %d\n", pos1_y, pos1_x, pos2_y, pos2_x);
+    movePiece(pos1_y, pos1_x, pos2_y, pos2_x, board);
+    printBoard(board);
 
     return 0;
 }
 
-void printBoard(int board_copy[8][8]) {
+int movePiece(int x1, int y1, int x2, int y2, int board[BOARD_SIZE][BOARD_SIZE]) {
+    if(isBoardPosition(x1, y2) && isBoardPosition(x2, y2)) {
+        board[x2][y2] = board[x1][y1];
+        board[x1][y1] = 0;
+        return 0;
+    }
+    return -1;
+}
+
+int isBoardPosition(int x, int y) {
+    if(x < 0 || x > BOARD_SIZE) {
+        return 0;
+    }
+    if(y < 0 || y > BOARD_SIZE) {
+        return 0;
+    }
+    return 1;
+}
+
+void printBoard(int board[8][8]) {
     for(int x = 0; x < BOARD_SIZE; x++) {
         printSolidLine();
         printIntermediateLine();
         for(int y = 0; y < BOARD_SIZE; y++) {
-            printPiece(board_copy[x][y]);
+            printPiece(board[x][y]);
         }
         printf("\n");
         printIntermediateLine();
