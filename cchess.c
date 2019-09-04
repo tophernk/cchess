@@ -22,8 +22,8 @@ void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(int);
-int movePiece(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
-int isBoardPosition(int, int);
+int movePiece(int*, int*);
+int* getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
 
 int main()
 {
@@ -42,22 +42,25 @@ int main()
     int pieceMoved = 1;
     while (pieceMoved)
     {
-        char pos1_x, pos2_x;
-        int pos1_y, pos2_y;
+        char from_file, to_file;
+        int from_rank, to_rank;
 
-        while(scanf("%c %d %c %d", &pos1_x, &pos1_y, &pos2_x, &pos2_y) != 4)
+        while(scanf("%c %d %c %d", &from_file, &from_rank, &to_file, &to_rank) != 4)
         {
-            while((pos1_x = getchar()) != EOF && pos1_x != '\n');
+            while((from_file = getchar()) != EOF && from_file != '\n');
             printf("invalid input\n");
         }
 
-        pos1_x -= FILE_OFFSET;
-        pos2_x -= FILE_OFFSET;
+        from_file -= FILE_OFFSET;
+        to_file -= FILE_OFFSET;
 
-        pos1_y = (pos1_y - BOARD_SIZE) * -1;
-        pos2_y = (pos2_y - BOARD_SIZE) * -1;
+        from_rank = (from_rank - BOARD_SIZE) * -1;
+        to_rank = (to_rank - BOARD_SIZE) * -1;
 
-        pieceMoved = movePiece(pos1_y, pos1_x, pos2_y, pos2_x, board);
+        int *from_pos = getBoardPosition(from_file, from_rank, board);
+        int *to_pos = getBoardPosition(to_file, to_rank, board);
+
+        pieceMoved = movePiece(from_pos, to_pos);
 
         printBoard(board);
         getchar(); // discard newline from input
@@ -68,28 +71,28 @@ int main()
     return 0;
 }
 
-int movePiece(int x1, int y1, int x2, int y2, int board[BOARD_SIZE][BOARD_SIZE])
+int movePiece(int* from, int* to)
 {
-    if (isBoardPosition(x1, y2) && isBoardPosition(x2, y2))
+    if(from != NULL && to != NULL)
     {
-        board[x2][y2] = board[x1][y1];
-        board[x1][y1] = 0;
+        *to = *from;
+        *from=0;
         return 1;
     }
     return 0;
 }
 
-int isBoardPosition(int x, int y)
+int* getBoardPosition(int rank, int file, int board[BOARD_SIZE][BOARD_SIZE])
 {
-    if (x < 0 || x > BOARD_SIZE)
+    if (rank < 0 || rank > BOARD_SIZE)
     {
-        return 0;
+        return NULL;
     }
-    if (y < 0 || y > BOARD_SIZE)
+    if (file < 0 || file > BOARD_SIZE)
     {
-        return 0;
+        return NULL;
     }
-    return 1;
+    return &board[file][rank];
 }
 
 void printBoard(int board[8][8])
