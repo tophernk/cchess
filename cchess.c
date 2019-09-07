@@ -22,8 +22,9 @@ void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(int);
-int movePiece(int*, int*);
-int* getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
+int movePiece(int *, int *);
+int *getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
+int isValidMove(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
 
 int main()
 {
@@ -45,9 +46,10 @@ int main()
         char from_file, to_file;
         int from_rank, to_rank;
 
-        while(scanf("%c %d %c %d", &from_file, &from_rank, &to_file, &to_rank) != 4)
+        while (scanf("%c %d %c %d", &from_file, &from_rank, &to_file, &to_rank) != 4)
         {
-            while((from_file = getchar()) != EOF && from_file != '\n');
+            while ((from_file = getchar()) != EOF && from_file != '\n')
+                ;
             printf("invalid input\n");
         }
 
@@ -60,9 +62,22 @@ int main()
         int *from_pos = getBoardPosition(from_file, from_rank, board);
         int *to_pos = getBoardPosition(to_file, to_rank, board);
 
-        pieceMoved = movePiece(from_pos, to_pos);
+        if (from_pos == NULL || to_pos == NULL)
+        {
+            break;
+        }
 
-        printBoard(board);
+        if (isValidMove(from_file, from_rank, to_file, to_rank, board))
+        {
+            pieceMoved = movePiece(from_pos, to_pos);
+            printBoard(board);
+        }
+        else
+        {
+            printf("invalid move\n");
+            pieceMoved = 0;
+        }
+
         getchar(); // discard newline from input
     }
 
@@ -71,18 +86,51 @@ int main()
     return 0;
 }
 
-int movePiece(int* from, int* to)
+int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BOARD_SIZE])
 {
-    if(from != NULL && to != NULL)
+    int result = 1;
+    int piece = board[yfrom][xfrom];
+
+    if (piece % 10 == 1)
+    {
+        int sideways = xfrom - xto;
+        if (sideways > 1 || sideways < -1)
+        {
+            result = 0;
+        }
+        if ((sideways == 1 || sideways ==- 1) && board[yto][xto] == 0)
+        {
+            result = 0;
+        }
+        if (piece == PAWN_W && yfrom - yto != 1)
+        {
+            result = 0;
+        }
+        if (piece == PAWN_B && yfrom - yto != -1)
+        {
+            result = 0;
+        }
+    }
+    else
+    {
+        result = 0;
+        printf("can only move pawns so far\n");
+    }
+    return result;
+}
+
+int movePiece(int *from, int *to)
+{
+    if (*from != 0)
     {
         *to = *from;
-        *from=0;
+        *from = 0;
         return 1;
     }
     return 0;
 }
 
-int* getBoardPosition(int rank, int file, int board[BOARD_SIZE][BOARD_SIZE])
+int *getBoardPosition(int rank, int file, int board[BOARD_SIZE][BOARD_SIZE])
 {
     if (rank < 0 || rank > BOARD_SIZE)
     {
