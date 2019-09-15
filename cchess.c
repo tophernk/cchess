@@ -91,15 +91,16 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
 {
     int result = 1;
     int piece = board[yfrom][xfrom];
+    int xmove = abs(xfrom - xto);
+    int ymove = abs(yfrom - yto);
 
     if (piece % 10 == 1)
     {
-        int sideways = xfrom - xto;
-        if (sideways > 1 || sideways < -1)
+        if (xmove > 1)
         {
             result = 0;
         }
-        if ((sideways == 1 || sideways == -1) && board[yto][xto] == 0)
+        if (xmove == 1 && board[yto][xto] == 0)
         {
             result = 0;
         }
@@ -122,6 +123,11 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
         if (xmove == 2 && ymove == 1)
             return 1;
         return 0;
+    }
+    else if (piece % 10 == 3)
+    {
+        if (xmove != ymove)
+            return 0;
     }
     else
     {
