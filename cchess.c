@@ -25,6 +25,7 @@ void printPiece(int);
 int movePiece(int *, int *);
 int *getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
 int isValidMove(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
+int abs(int);
 
 int main()
 {
@@ -98,7 +99,7 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
         {
             result = 0;
         }
-        if ((sideways == 1 || sideways ==- 1) && board[yto][xto] == 0)
+        if ((sideways == 1 || sideways == -1) && board[yto][xto] == 0)
         {
             result = 0;
         }
@@ -111,12 +112,30 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
             result = 0;
         }
     }
+    else if (piece % 10 == 2)
+    {
+        int xmove = abs(xfrom - xto);
+        int ymove = abs(yfrom - yto);
+
+        if (xmove == 1 && ymove == 2)
+            return 1;
+        if (xmove == 2 && ymove == 1)
+            return 1;
+        return 0;
+    }
     else
     {
         result = 0;
         printf("can only move pawns so far\n");
     }
     return result;
+}
+
+int abs(int x)
+{
+    if (x < 0)
+        return x * -1;
+    return x;
 }
 
 int movePiece(int *from, int *to)
