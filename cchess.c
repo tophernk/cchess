@@ -26,6 +26,9 @@ int movePiece(int *, int *);
 int *getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
 int isValidMove(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
 int abs(int);
+int isValidRookMove(int, int);
+int isValidBishopMove(int, int);
+int isValidQueenMove(int, int);
 
 int main()
 {
@@ -126,14 +129,11 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
     }
     else if (piece % 10 == 3)
     {
-        if (xmove != ymove)
-            return 0;
+        return isValidBishopMove(xmove, ymove);
     }
     else if (piece % 10 == 5)
     {
-        if (xmove == 0 || ymove == 0)
-            return 1;
-        return 0;
+        return isValidRookMove(xmove, ymove);
     }
     else if (piece % 10 == 6)
     {
@@ -143,12 +143,35 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
             return 0;
         return 1;
     }
+    else if (piece % 10 == 9)
+    {
+        return isValidQueenMove(xmove, ymove);
+    }
     else
     {
         result = 0;
         printf("can only move pawns so far\n");
     }
     return result;
+}
+
+int isValidBishopMove(int xmove, int ymove)
+{
+    if (xmove != ymove)
+        return 0;
+    return 1;
+}
+
+int isValidRookMove(int xmove, int ymove)
+{
+    if (xmove == 0 || ymove == 0)
+        return 1;
+    return 0;
+}
+
+int isValidQueenMove(int xmove, int ymove)
+{
+    return isValidBishopMove(xmove, ymove) || isValidRookMove(xmove, ymove);
 }
 
 int abs(int x)
