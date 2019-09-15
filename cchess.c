@@ -135,6 +135,14 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BO
             return 1;
         return 0;
     }
+    else if (piece % 10 == 6)
+    {
+        if (xmove == 0 && ymove && 0)
+            return 0;
+        if (xmove > 1 || ymove > 1)
+            return 0;
+        return 1;
+    }
     else
     {
         result = 0;
