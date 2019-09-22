@@ -38,6 +38,8 @@ int isValidBishopMove(int, int);
 int isValidQueenMove(int, int);
 int cpuMove();
 struct piece *getPiece(int, int);
+void update_available_positions();
+void determine_available_positions(struct piece *);
 
 struct config
 {
@@ -86,9 +88,6 @@ int main()
 
         struct piece *pc = getPiece(from_file, from_rank);
         int *to_pos = getBoardPosition(to_file, to_rank);
-
-        printf("piece: %p\n", pc);
-        printf("to: %d\n", *to_pos);
 
         if (pc == NULL || to_pos == NULL)
         {
@@ -226,11 +225,54 @@ int movePiece(struct piece *p, int *to)
                 *p->current_position = 0;
                 p->current_position = to;
 
+                update_available_positions();
                 return 1;
             }
         }
     }
     return 0;
+}
+
+void update_available_positions()
+{
+    for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
+    {
+        if (conf.white[i].type != 0)
+            determine_available_positions(&conf.white[i]);
+    }
+    printf("all pieces updated\n");
+}
+
+void determine_available_positions(struct piece *p)
+{
+    int valid_pos_counter = 0;
+    int piece_file = 0;
+    int piece_rank = 0;
+    for (int x = 0; x < BOARD_SIZE; x++)
+    {
+        for (int y = 0; y < BOARD_SIZE; y++)
+        {
+            if (board[x][y] == *p->current_position)
+            {
+                piece_file = x;
+                piece_rank = y;
+                goto found;
+            }
+        }
+    }
+found:
+    for (int x = 0; x < BOARD_SIZE; x++)
+    {
+        for (int y = 0; y < BOARD_SIZE; y++)
+        {
+            if (isValidMove(piece_rank, piece_file, y, x))
+            {
+                printf("valid move found ...\n");
+                p->available_positions[valid_pos_counter] = &board[x][y];
+                valid_pos_counter++;
+            }
+        }
+    }
 }
 
 int *getBoardPosition(int rank, int file)
