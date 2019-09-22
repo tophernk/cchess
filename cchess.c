@@ -18,31 +18,52 @@
 
 #define FILE_OFFSET 'a'
 
-void printBoard(int[BOARD_SIZE][BOARD_SIZE]);
+struct piece
+{
+    int type;
+    int *current_position;
+    int *available_positions[27];
+};
+
+void printBoard();
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(int);
-int movePiece(int *, int *);
-int *getBoardPosition(int, int, int[BOARD_SIZE][BOARD_SIZE]);
-int isValidMove(int, int, int, int, int[BOARD_SIZE][BOARD_SIZE]);
+int movePiece(struct piece *, int *);
+int *getBoardPosition(int, int);
+int isValidMove(int, int, int, int);
 int abs(int);
 int isValidRookMove(int, int);
 int isValidBishopMove(int, int);
 int isValidQueenMove(int, int);
+int cpuMove();
+struct piece *getPiece(int, int);
+
+struct config
+{
+    struct piece white[16];
+    struct piece black[16];
+    int white_value;
+    int black_value;
+};
+
+static int board[BOARD_SIZE][BOARD_SIZE];
+static struct piece pawn;
+static struct config conf;
 
 int main()
 {
-    static int board[BOARD_SIZE][BOARD_SIZE] = {
-        {ROOK_B, KNIGHT_B, BISHOP_B, QUEEN_B, KING_B, BISHOP_B, KNIGHT_B, ROOK_B},
-        {PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B, PAWN_B},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W, PAWN_W},
-        {ROOK_W, KNIGHT_W, BISHOP_W, QUEEN_W, KING_W, BISHOP_W, KNIGHT_W, ROOK_W}};
+    board[6][0] = PAWN_W;
+    pawn.type = PAWN_W;
+    pawn.current_position = &board[6][0];
+    pawn.available_positions[0] = &board[5][0];
+    pawn.available_positions[1] = &board[4][0];
 
-    printBoard(board);
+    printf("pawn position: %d\n", *pawn.current_position);
+
+    conf.white[0] = pawn;
+
+    printBoard();
 
     int pieceMoved = 1;
     while (pieceMoved)
@@ -63,18 +84,21 @@ int main()
         from_rank = (from_rank - BOARD_SIZE) * -1;
         to_rank = (to_rank - BOARD_SIZE) * -1;
 
-        int *from_pos = getBoardPosition(from_file, from_rank, board);
-        int *to_pos = getBoardPosition(to_file, to_rank, board);
+        struct piece *pc = getPiece(from_file, from_rank);
+        int *to_pos = getBoardPosition(to_file, to_rank);
 
-        if (from_pos == NULL || to_pos == NULL)
+        printf("piece: %p\n", pc);
+        printf("to: %d\n", *to_pos);
+
+        if (pc == NULL || to_pos == NULL)
         {
             break;
         }
 
-        if (isValidMove(from_file, from_rank, to_file, to_rank, board))
+        if (isValidMove(from_file, from_rank, to_file, to_rank))
         {
-            pieceMoved = movePiece(from_pos, to_pos);
-            printBoard(board);
+            pieceMoved = movePiece(pc, to_pos);
+            printBoard();
         }
         else
         {
@@ -83,6 +107,10 @@ int main()
         }
 
         getchar(); // discard newline from input
+        if (pieceMoved == 1)
+        {
+            pieceMoved = cpuMove();
+        }
     }
 
     printf("exit.. (no piece moved)\n");
@@ -90,7 +118,13 @@ int main()
     return 0;
 }
 
-int isValidMove(int xfrom, int yfrom, int xto, int yto, int board[BOARD_SIZE][BOARD_SIZE])
+int cpuMove()
+{
+    printf("cpu move...\n");
+    return 1;
+}
+
+int isValidMove(int xfrom, int yfrom, int xto, int yto)
 {
     int result = 1;
     int piece = board[yfrom][xfrom];
@@ -181,18 +215,20 @@ int abs(int x)
     return x;
 }
 
-int movePiece(int *from, int *to)
+int movePiece(struct piece *p, int *to)
 {
-    if (*from != 0)
+    if (p != NULL)
     {
-        *to = *from;
-        *from = 0;
+        *to = *p->current_position;
+        *p->current_position = 0;
+        p->current_position = to;
+
         return 1;
     }
     return 0;
 }
 
-int *getBoardPosition(int rank, int file, int board[BOARD_SIZE][BOARD_SIZE])
+int *getBoardPosition(int rank, int file)
 {
     if (rank < 0 || rank > BOARD_SIZE)
     {
@@ -205,7 +241,19 @@ int *getBoardPosition(int rank, int file, int board[BOARD_SIZE][BOARD_SIZE])
     return &board[file][rank];
 }
 
-void printBoard(int board[8][8])
+struct piece *getPiece(int rank, int file)
+{
+    for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
+    {
+        if (conf.white[i].current_position == &board[file][rank])
+        {
+            return &conf.white[i];
+        }
+    }
+    return NULL;
+}
+
+void printBoard()
 {
     for (int x = 0; x < BOARD_SIZE; x++)
     {
