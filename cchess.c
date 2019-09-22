@@ -95,9 +95,8 @@ int main()
             break;
         }
 
-        if (isValidMove(from_file, from_rank, to_file, to_rank))
+        if ((pieceMoved = movePiece(pc, to_pos)))
         {
-            pieceMoved = movePiece(pc, to_pos);
             printBoard();
         }
         else
@@ -219,11 +218,17 @@ int movePiece(struct piece *p, int *to)
 {
     if (p != NULL)
     {
-        *to = *p->current_position;
-        *p->current_position = 0;
-        p->current_position = to;
+        for (int i = 0; i < sizeof(p->available_positions) / sizeof(p->available_positions[0]); i++)
+        {
+            if (p->available_positions[i] == to)
+            {
+                *to = *p->current_position;
+                *p->current_position = 0;
+                p->current_position = to;
 
-        return 1;
+                return 1;
+            }
+        }
     }
     return 0;
 }
