@@ -40,6 +40,7 @@ int cpuMove();
 struct piece *getPiece(int, int);
 void update_available_positions();
 void determine_available_positions(struct piece *);
+void init();
 
 struct config
 {
@@ -50,21 +51,35 @@ struct config
 };
 
 static int board[BOARD_SIZE][BOARD_SIZE];
-static struct piece pawn;
 static struct config conf;
+
+void init()
+{
+    struct piece pawn;
+    pawn.type = PAWN_W;
+    pawn.current_position = &board[6][0];
+
+    struct piece knight;
+    knight.type = KNIGHT_W;
+    knight.current_position = &board[7][1];
+
+    conf.white[0] = pawn;
+    conf.white[1] = knight;
+
+    for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
+    {
+        struct piece tmp = conf.white[i];
+        if (tmp.type != 0)
+        {
+            *tmp.current_position = tmp.type;
+        }
+    }
+    update_available_positions();
+}
 
 int main()
 {
-    board[6][0] = PAWN_W;
-    pawn.type = PAWN_W;
-    pawn.current_position = &board[6][0];
-    pawn.available_positions[0] = &board[5][0];
-    pawn.available_positions[1] = &board[4][0];
-
-    printf("pawn position: %d\n", *pawn.current_position);
-
-    conf.white[0] = pawn;
-
+    init();
     printBoard();
 
     int pieceMoved = 1;
