@@ -151,7 +151,7 @@ int main()
 int cpuMove()
 {
     int i = rand() % 2;
-    movePiece(&conf.black[i], conf.black[i].available_positions[i]);
+    movePiece(&conf.black[i], conf.black[i].available_positions[0]);
     printf("cpu move...\n");
     printBoard();
     return 1;
@@ -165,9 +165,12 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto)
     int ymove = abs(yfrom - yto);
 
     int to_pos = board[yto][xto];
-    if (to_pos != 0 && abs(piece - to_pos) < 10)
+    if (to_pos != 0)
     {
-        return 0;
+        if (piece < 10 && to_pos < 10)
+            return 0;
+        if (piece > 10 && to_pos > 10)
+            return 0;
     }
 
     if (piece % 10 == 1)
