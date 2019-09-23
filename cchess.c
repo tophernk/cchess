@@ -66,9 +66,24 @@ void init()
     conf.white[0] = pawn;
     conf.white[1] = knight;
 
+    struct piece black_pawn;
+    black_pawn.type = PAWN_B;
+    black_pawn.current_position = &board[1][0];
+
+    conf.black[0] = black_pawn;
+
     for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
     {
         struct piece tmp = conf.white[i];
+        if (tmp.type != 0)
+        {
+            *tmp.current_position = tmp.type;
+        }
+    }
+
+    for (int i = 0; i < sizeof(conf.black) / sizeof(conf.black[0]); i++)
+    {
+        struct piece tmp = conf.black[i];
         if (tmp.type != 0)
         {
             *tmp.current_position = tmp.type;
@@ -133,7 +148,9 @@ int main()
 
 int cpuMove()
 {
+    movePiece(&conf.black[0], conf.black[0].available_positions[0]);
     printf("cpu move...\n");
+    printBoard();
     return 1;
 }
 
@@ -197,7 +214,6 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto)
     else
     {
         result = 0;
-        printf("can only move pawns so far\n");
     }
     return result;
 }
@@ -255,6 +271,11 @@ void update_available_positions()
         if (conf.white[i].type != 0)
             determine_available_positions(&conf.white[i]);
     }
+    for (int i = 0; i < sizeof(conf.black) / sizeof(conf.black[0]); i++)
+    {
+        if (conf.black[i].type != 0)
+            determine_available_positions(&conf.black[i]);
+    }
     printf("all pieces updated\n");
 }
 
@@ -282,7 +303,6 @@ found:
         {
             if (isValidMove(piece_rank, piece_file, y, x))
             {
-                printf("valid move found ...\n");
                 p->available_positions[valid_pos_counter] = &board[x][y];
                 valid_pos_counter++;
             }
