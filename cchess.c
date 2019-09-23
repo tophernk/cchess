@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define BOARD_SIZE 8
 
@@ -55,6 +56,7 @@ static struct config conf;
 
 void init()
 {
+    srand(0);
     struct piece pawn;
     pawn.type = PAWN_W;
     pawn.current_position = &board[6][0];
@@ -70,7 +72,12 @@ void init()
     black_pawn.type = PAWN_B;
     black_pawn.current_position = &board[1][0];
 
+    struct piece black_knight;
+    black_knight.type = KNIGHT_B;
+    black_knight.current_position = &board[0][1];
+
     conf.black[0] = black_pawn;
+    conf.black[1] = black_knight;
 
     for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
     {
@@ -148,7 +155,8 @@ int main()
 
 int cpuMove()
 {
-    movePiece(&conf.black[0], conf.black[0].available_positions[0]);
+    int i = rand() % 2;
+    movePiece(&conf.black[i], conf.black[i].available_positions[i]);
     printf("cpu move...\n");
     printBoard();
     return 1;
@@ -160,6 +168,12 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto)
     int piece = board[yfrom][xfrom];
     int xmove = abs(xfrom - xto);
     int ymove = abs(yfrom - yto);
+
+    int to_pos = board[yto][xto];
+    if (to_pos != 0 && abs(piece - to_pos) < 10)
+    {
+        return 0;
+    }
 
     if (piece % 10 == 1)
     {
