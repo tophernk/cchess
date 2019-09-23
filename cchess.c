@@ -42,6 +42,7 @@ struct piece *getPiece(int, int);
 void update_available_positions();
 void determine_available_positions(struct piece *);
 void init();
+struct piece createPiece(int, int, int);
 
 struct config
 {
@@ -54,30 +55,24 @@ struct config
 static int board[BOARD_SIZE][BOARD_SIZE];
 static struct config conf;
 
+struct piece createPiece(int type, int x, int y)
+{
+    struct piece tmp;
+    tmp.type = type;
+    tmp.current_position = &board[x][y];
+
+    return tmp;
+}
+
 void init()
 {
     srand(0);
-    struct piece pawn;
-    pawn.type = PAWN_W;
-    pawn.current_position = &board[6][0];
 
-    struct piece knight;
-    knight.type = KNIGHT_W;
-    knight.current_position = &board[7][1];
+    conf.white[0] = createPiece(PAWN_W, 6, 0);
+    conf.white[1] = createPiece(KNIGHT_W, 7, 1);
 
-    conf.white[0] = pawn;
-    conf.white[1] = knight;
-
-    struct piece black_pawn;
-    black_pawn.type = PAWN_B;
-    black_pawn.current_position = &board[1][0];
-
-    struct piece black_knight;
-    black_knight.type = KNIGHT_B;
-    black_knight.current_position = &board[0][1];
-
-    conf.black[0] = black_pawn;
-    conf.black[1] = black_knight;
+    conf.black[0] = createPiece(PAWN_B, 1, 0);
+    conf.black[1] = createPiece(KNIGHT_B, 0, 1);
 
     for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
     {
