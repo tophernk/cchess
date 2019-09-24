@@ -26,6 +26,12 @@ struct piece
     int *available_positions[27];
 };
 
+struct move
+{
+    struct piece *p;
+    int *to_position;
+};
+
 void printBoard();
 void printSolidLine();
 void printIntermediateLine();
@@ -43,6 +49,7 @@ void update_available_positions();
 void determine_available_positions(struct piece *);
 void init();
 struct piece createPiece(int, int, int);
+struct move calculateMove(int);
 
 struct config
 {
@@ -54,6 +61,15 @@ struct config
 
 static int board[BOARD_SIZE][BOARD_SIZE];
 static struct config conf;
+
+struct move calculateMove(int depth)
+{
+    struct move result;
+    int i = rand() % 2;
+    result.p = &conf.black[i];
+    result.to_position = conf.black[i].available_positions[0];
+    return result;
+}
 
 struct piece createPiece(int type, int x, int y)
 {
@@ -150,8 +166,8 @@ int main()
 
 int cpuMove()
 {
-    int i = rand() % 2;
-    movePiece(&conf.black[i], conf.black[i].available_positions[0]);
+    struct move next_move = calculateMove(2);
+    movePiece(next_move.p, next_move.to_position);
     printf("cpu move...\n");
     printBoard();
     return 1;
