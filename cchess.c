@@ -32,63 +32,74 @@ struct move
     int *to_position;
 };
 
-void printBoard();
+struct config
+{
+    int board[BOARD_SIZE][BOARD_SIZE];
+    struct piece white[16];
+    struct piece black[16];
+};
+
+void printBoard(struct config *);
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(int);
-int movePiece(struct piece *, int *);
-int *getBoardPosition(int, int);
-int isValidMove(int, int, int, int);
+int movePiece(struct piece *, int *, struct config *);
+int *getBoardPosition(int, int, struct config *);
+int isValidMove(struct config *, int, int, int, int);
 int abs(int);
 int isValidRookMove(int, int);
 int isValidBishopMove(int, int);
 int isValidQueenMove(int, int);
-int cpuMove();
-struct piece *getPiece(int, int);
-void update_available_positions();
-void determine_available_positions(struct piece *);
-void init();
-struct piece createPiece(int, int, int);
-struct move calculateMove(int);
+int cpuMove(struct config *);
+struct piece *getPiece(int, int, struct config *);
+void update_available_positions(struct config *);
+void determine_available_positions(struct piece *, struct config *);
+struct config init();
+struct piece createPiece(int, int *);
+struct move calculateMove(struct config *, int);
+int evalConf(struct config *);
 
-struct config
-{
-    struct piece white[16];
-    struct piece black[16];
-    int white_value;
-    int black_value;
-};
-
-static int board[BOARD_SIZE][BOARD_SIZE];
-static struct config conf;
-
-struct move calculateMove(int depth)
+struct move calculateMove(struct config *conf, int depth)
 {
     struct move result;
     int i = rand() % 2;
-    result.p = &conf.black[i];
-    result.to_position = conf.black[i].available_positions[0];
+    result.p = &conf->black[i];
+    result.to_position = conf->black[i].available_positions[0];
     return result;
 }
 
-struct piece createPiece(int type, int x, int y)
+int evalConf(struct config *in_conf)
+{
+    int white;
+    int black;
+    for (int i = 0; i < sizeof(in_conf->white) / sizeof(in_conf->white[0]); i++)
+    {
+        white += in_conf->white[i].type;
+        black += in_conf->black[i].type;
+    }
+    return white - black;
+}
+
+struct piece createPiece(int type, int *pos)
 {
     struct piece tmp;
     tmp.type = type;
-    tmp.current_position = &board[x][y];
+    tmp.current_position = pos;
 
     return tmp;
 }
 
-void init()
+struct config init()
 {
     srand(0);
 
-    conf.white[0] = createPiece(PAWN_W, 6, 0);
-    conf.white[1] = createPiece(KNIGHT_W, 7, 1);
+    struct config conf = {};
 
-    conf.black[0] = createPiece(PAWN_B, 1, 0);
-    conf.black[1] = createPiece(KNIGHT_B, 0, 1);
+    conf.white[0] = createPiece(PAWN_W, &conf.board[6][0]);
+    conf.white[1] = createPiece(KNIGHT_W, &conf.board[7][1]);
+
+    conf.black[0] = createPiece(PAWN_B, &conf.board[1][0]);
+    conf.black[1] = createPiece(KNIGHT_B, &conf.board[0][1]);
 
     for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
     {
@@ -107,13 +118,15 @@ void init()
             *tmp.current_position = tmp.type;
         }
     }
-    update_available_positions();
+    update_available_positions(&conf);
+
+    return conf;
 }
 
 int main()
 {
-    init();
-    printBoard();
+    struct config conf = init();
+    printBoard(&conf);
 
     int pieceMoved = 1;
     while (pieceMoved)
@@ -134,17 +147,17 @@ int main()
         from_rank = (from_rank - BOARD_SIZE) * -1;
         to_rank = (to_rank - BOARD_SIZE) * -1;
 
-        struct piece *pc = getPiece(from_file, from_rank);
-        int *to_pos = getBoardPosition(to_file, to_rank);
+        struct piece *pc = getPiece(from_file, from_rank, &conf);
+        int *to_pos = getBoardPosition(to_file, to_rank, &conf);
 
         if (pc == NULL || to_pos == NULL)
         {
             break;
         }
 
-        if ((pieceMoved = movePiece(pc, to_pos)))
+        if ((pieceMoved = movePiece(pc, to_pos, &conf)))
         {
-            printBoard();
+            printBoard(&conf);
         }
         else
         {
@@ -155,7 +168,7 @@ int main()
         getchar(); // discard newline from input
         if (pieceMoved == 1)
         {
-            pieceMoved = cpuMove();
+            pieceMoved = cpuMove(&conf);
         }
     }
 
@@ -164,23 +177,23 @@ int main()
     return 0;
 }
 
-int cpuMove()
+int cpuMove(struct config *conf)
 {
-    struct move next_move = calculateMove(2);
-    movePiece(next_move.p, next_move.to_position);
+    struct move next_move = calculateMove(conf, 2);
+    movePiece(next_move.p, next_move.to_position, conf);
     printf("cpu move...\n");
-    printBoard();
+    printBoard(conf);
     return 1;
 }
 
-int isValidMove(int xfrom, int yfrom, int xto, int yto)
+int isValidMove(struct config *conf, int xfrom, int yfrom, int xto, int yto)
 {
     int result = 1;
-    int piece = board[yfrom][xfrom];
+    int piece = conf->board[yfrom][xfrom];
     int xmove = abs(xfrom - xto);
     int ymove = abs(yfrom - yto);
 
-    int to_pos = board[yto][xto];
+    int to_pos = conf->board[yto][xto];
     if (to_pos != 0)
     {
         if (piece < 10 && to_pos < 10)
@@ -195,7 +208,7 @@ int isValidMove(int xfrom, int yfrom, int xto, int yto)
         {
             result = 0;
         }
-        if (xmove == 1 && board[yto][xto] == 0)
+        if (xmove == 1 && conf->board[yto][xto] == 0)
         {
             result = 0;
         }
@@ -272,7 +285,7 @@ int abs(int x)
     return x;
 }
 
-int movePiece(struct piece *p, int *to)
+int movePiece(struct piece *p, int *to, struct config *conf)
 {
     if (p != NULL)
     {
@@ -284,7 +297,7 @@ int movePiece(struct piece *p, int *to)
                 *p->current_position = 0;
                 p->current_position = to;
 
-                update_available_positions();
+                update_available_positions(conf);
                 return 1;
             }
         }
@@ -292,22 +305,22 @@ int movePiece(struct piece *p, int *to)
     return 0;
 }
 
-void update_available_positions()
+void update_available_positions(struct config *conf)
 {
-    for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
+    for (int i = 0; i < sizeof(conf->white) / sizeof(conf->white[0]); i++)
     {
-        if (conf.white[i].type != 0)
-            determine_available_positions(&conf.white[i]);
+        if (conf->white[i].type != 0)
+            determine_available_positions(&conf->white[i], conf);
     }
-    for (int i = 0; i < sizeof(conf.black) / sizeof(conf.black[0]); i++)
+    for (int i = 0; i < sizeof(conf->black) / sizeof(conf->black[0]); i++)
     {
-        if (conf.black[i].type != 0)
-            determine_available_positions(&conf.black[i]);
+        if (conf->black[i].type != 0)
+            determine_available_positions(&conf->black[i], conf);
     }
     printf("all pieces updated\n");
 }
 
-void determine_available_positions(struct piece *p)
+void determine_available_positions(struct piece *p, struct config *conf)
 {
     int valid_pos_counter = 0;
     int piece_file = 0;
@@ -316,7 +329,7 @@ void determine_available_positions(struct piece *p)
     {
         for (int y = 0; y < BOARD_SIZE; y++)
         {
-            if (board[x][y] == *p->current_position)
+            if (conf->board[x][y] == *p->current_position)
             {
                 piece_file = x;
                 piece_rank = y;
@@ -329,16 +342,16 @@ found:
     {
         for (int y = 0; y < BOARD_SIZE; y++)
         {
-            if (isValidMove(piece_rank, piece_file, y, x))
+            if (isValidMove(conf, piece_rank, piece_file, y, x))
             {
-                p->available_positions[valid_pos_counter] = &board[x][y];
+                p->available_positions[valid_pos_counter] = &conf->board[x][y];
                 valid_pos_counter++;
             }
         }
     }
 }
 
-int *getBoardPosition(int rank, int file)
+int *getBoardPosition(int rank, int file, struct config *conf)
 {
     if (rank < 0 || rank > BOARD_SIZE)
     {
@@ -348,22 +361,22 @@ int *getBoardPosition(int rank, int file)
     {
         return NULL;
     }
-    return &board[file][rank];
+    return &conf->board[file][rank];
 }
 
-struct piece *getPiece(int rank, int file)
+struct piece *getPiece(int rank, int file, struct config *conf)
 {
-    for (int i = 0; i < sizeof(conf.white) / sizeof(conf.white[0]); i++)
+    for (int i = 0; i < sizeof(conf->white) / sizeof(conf->white[0]); i++)
     {
-        if (conf.white[i].current_position == &board[file][rank])
+        if (conf->white[i].current_position == &conf->board[file][rank])
         {
-            return &conf.white[i];
+            return &conf->white[i];
         }
     }
     return NULL;
 }
 
-void printBoard()
+void printBoard(struct config *conf)
 {
     for (int x = 0; x < BOARD_SIZE; x++)
     {
@@ -371,7 +384,7 @@ void printBoard()
         printIntermediateLine();
         for (int y = 0; y < BOARD_SIZE; y++)
         {
-            printPiece(board[x][y]);
+            printPiece(conf->board[x][y]);
         }
         printf("\n");
         printIntermediateLine();
