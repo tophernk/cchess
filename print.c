@@ -6,7 +6,7 @@ void printBoard(config_t *conf) {
         printSolidLine();
         printIntermediateLine();
         for (int y = 0; y < BOARD_SIZE; y++) {
-            printPiece(conf->board[x][y]);
+            printPiece(conf->board[y][x]);
         }
         printf("\n");
         printIntermediateLine();

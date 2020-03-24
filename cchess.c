@@ -14,6 +14,9 @@ piece_t createPiece(piece_type_t type, int x, int y, config_t *config) {
 
     config->board[tmp.current_position.x][tmp.current_position.y] = tmp.type;
 
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+       invalidate_position(&tmp.available_positions[i]);
+    }
     return tmp;
 }
 
@@ -27,12 +30,18 @@ config_t init() {
             conf.board[x][y] = NONE;
         }
     }
+    for(int i = 0; i < BOARD_SIZE*2; i++) {
+        conf.white[i] = createPiece(NONE, -1, -1, &conf);
+        conf.black[i] = createPiece(NONE, -1, -1, &conf);
+    }
 
-    conf.white[0] = createPiece(PAWN_W, 6, 0, &conf);
-    conf.white[1] = createPiece(KNIGHT_W, 7, 1, &conf);
+    conf.white[0] = createPiece(PAWN_W, 0, 6, &conf);
+    conf.white[1] = createPiece(KNIGHT_W, 1, 7, &conf);
 
-    conf.black[0] = createPiece(PAWN_B, 1, 0, &conf);
-    conf.black[1] = createPiece(KNIGHT_B, 0, 1, &conf);
+    conf.black[0] = createPiece(PAWN_B, 0, 1, &conf);
+    conf.black[1] = createPiece(KNIGHT_B, 1, 0, &conf);
+
+    update_available_positions(&conf);
 
     return conf;
 }
@@ -43,28 +52,27 @@ int main() {
 
     int pieceMoved = 1;
     while (pieceMoved) {
-        char from_file, to_file;
-        int from_rank, to_rank;
+        char from_x, to_x;
+        int from_y, to_y;
 
-        while (scanf("%c %d %c %d", &from_file, &from_rank, &to_file, &to_rank) != 4) {
-            while ((from_file = getchar()) != EOF && from_file != '\n');
+        while (scanf("%c %d %c %d", &from_x, &from_y, &to_x, &to_y) != 4) {
+            while ((from_x = getchar()) != EOF && from_x != '\n');
             printf("invalid input\n");
         }
 
-        from_file -= FILE_OFFSET;
-        to_file -= FILE_OFFSET;
+        from_x -= FILE_OFFSET;
+        to_x -= FILE_OFFSET;
 
-        from_rank = (from_rank - BOARD_SIZE) * -1;
-        to_rank = (to_rank - BOARD_SIZE) * -1;
+        from_y = (from_y - BOARD_SIZE) * -1;
+        to_y = (to_y - BOARD_SIZE) * -1;
 
-        struct piece *pc = getPiece(from_file, from_rank, &conf);
-        int *to_pos = getBoardPosition(to_file, to_rank, &conf);
+        struct piece *pc = getPiece(from_x, from_y, &conf);
 
-        if (pc == NULL || to_pos == NULL) {
+        if (pc == NULL) {
             break;
         }
 
-        if ((pieceMoved = movePiece(pc, to_pos, &conf))) {
+        if ((pieceMoved = movePiece(pc, to_x, to_y, &conf))) {
             printBoard(&conf);
         } else {
             printf("invalid move\n");
@@ -100,53 +108,35 @@ void update_available_positions(config_t *conf) {
     printf("all pieces updated\n");
 }
 
+void invalidate_position(pos_t *position) {
+   position->x = -1;
+   position->y = -1;
+}
+
 void determine_available_positions(piece_t *p, config_t *conf) {
     int valid_pos_counter = 0;
-    int piece_file = 0;
-    int piece_rank = 0;
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            if (x == p->current_position.x && y == p->current_position.y) {
-                piece_file = x;
-                piece_rank = y;
-                goto found;
-            }
-        }
-    }
-    found:
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            if (isValidMove(conf, piece_rank, piece_file, y, x)) {
+    int piece_x = p->current_position.x;
+    int piece_y = p->current_position.y;
+    for (int to_x = 0; to_x < BOARD_SIZE; to_x++) {
+        for (int to_y = 0; to_y < BOARD_SIZE; to_y++) {
+            if (isValidMove(conf, piece_x, piece_y, to_x, to_y)) {
                 pos_t validPos;
-                validPos.x = x;
-                validPos.y = y;
+                validPos.x = to_x;
+                validPos.y = to_y;
                 p->available_positions[valid_pos_counter] = validPos;
                 valid_pos_counter++;
             }
         }
     }
-    // set remaining positions of piece to 0
+    // invalidate remaining positions
     for (int i = valid_pos_counter; i < sizeof(p->available_positions) / sizeof(p->available_positions[0]); i++) {
-        pos_t invalid_pos;
-        invalid_pos.x = -1;
-        invalid_pos.y = -1;
-        p->available_positions[i] = invalid_pos;
+        invalidate_position(&p->available_positions[i]);
     }
 }
 
-int *getBoardPosition(int rank, int file, config_t *conf) {
-    if (rank < 0 || rank > BOARD_SIZE) {
-        return NULL;
-    }
-    if (file < 0 || file > BOARD_SIZE) {
-        return NULL;
-    }
-    return &conf->board[file][rank];
-}
-
-piece_t *getPiece(int rank, int file, config_t *conf) {
+piece_t *getPiece(int x, int y, config_t *conf) {
     for (int i = 0; i < sizeof(conf->white) / sizeof(conf->white[0]); i++) {
-        if (conf->white[i].current_position.x == file && conf->white[i].current_position.y == rank) {
+        if (conf->white[i].current_position.x == x && conf->white[i].current_position.y == y) {
             return &conf->white[i];
         }
     }

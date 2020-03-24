@@ -3,6 +3,7 @@
 
 #include "pieces.h"
 #define BOARD_SIZE 8
+#define MAX_POSITIONS 27
 
 #define FILE_OFFSET 'a'
 
@@ -12,14 +13,14 @@ typedef struct {
 } pos_t;
 
 typedef struct {
-    int type;
+    piece_type_t type;
     pos_t current_position;
-    pos_t available_positions[27];
+    pos_t available_positions[MAX_POSITIONS];
 } piece_t;
 
 typedef struct {
     piece_t *p;
-    int *to_position;
+    pos_t *to_position;
 } move_t;
 
 typedef struct {
@@ -32,8 +33,7 @@ void printBoard(config_t *);
 void printSolidLine();
 void printIntermediateLine();
 void printPiece(piece_type_t);
-int movePiece(piece_t *, pos_t *, config_t *);
-int *getBoardPosition(int, int, config_t *);
+int movePiece(piece_t *, int to_x, int to_y, config_t *);
 int isValidMove(config_t *, int, int, int, int);
 int abs(int);
 int isValidRookMove(int, int);
@@ -47,5 +47,6 @@ config_t init();
 piece_t createPiece(piece_type_t type, int x, int y, config_t* cfg);
 move_t calculateMove(config_t *, int);
 int evalConf(config_t *);
+void invalidate_position(pos_t *position);
 
 #endif //CCHESS_DEFINTIONS_H
