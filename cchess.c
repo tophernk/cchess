@@ -15,7 +15,7 @@ piece_t createPiece(piece_type_t type, int x, int y, config_t *config) {
     config->board[tmp.current_position.x][tmp.current_position.y] = tmp.type;
 
     for (int i = 0; i < MAX_POSITIONS; i++) {
-       invalidate_position(&tmp.available_positions[i]);
+        invalidate_position(&tmp.available_positions[i]);
     }
     return tmp;
 }
@@ -30,7 +30,7 @@ config_t init() {
             conf.board[x][y] = NONE;
         }
     }
-    for(int i = 0; i < BOARD_SIZE*2; i++) {
+    for (int i = 0; i < BOARD_SIZE * 2; i++) {
         conf.white[i] = createPiece(NONE, -1, -1, &conf);
         conf.black[i] = createPiece(NONE, -1, -1, &conf);
     }
@@ -66,7 +66,7 @@ int main() {
         from_y = (from_y - BOARD_SIZE) * -1;
         to_y = (to_y - BOARD_SIZE) * -1;
 
-        struct piece *pc = getPiece(from_x, from_y, &conf);
+        piece_t *pc = getPiece(from_x, from_y, &conf);
 
         if (pc == NULL) {
             break;
@@ -80,7 +80,7 @@ int main() {
         }
 
         getchar(); // discard newline from input
-        if (pieceMoved == 1) {
+        if (pieceMoved) {
             pieceMoved = cpuMove(&conf);
         }
     }
@@ -108,8 +108,8 @@ void update_available_positions(config_t *conf) {
 }
 
 void invalidate_position(pos_t *position) {
-   position->x = -1;
-   position->y = -1;
+    position->x = -1;
+    position->y = -1;
 }
 
 void determine_available_positions(piece_t *p, config_t *conf) {
