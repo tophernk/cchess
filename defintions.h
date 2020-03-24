@@ -45,6 +45,7 @@ void update_available_positions(config_t *);
 void determine_available_positions(piece_t *, config_t *);
 config_t init();
 piece_t createPiece(piece_type_t type, int x, int y, config_t* cfg);
+void remove_piece(int x, int y, config_t* cfg);
 move_t calculateMove(config_t *, int);
 int evalConf(config_t *);
 void invalidate_position(pos_t *position);

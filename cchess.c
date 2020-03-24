@@ -105,7 +105,6 @@ void update_available_positions(config_t *conf) {
         if (conf->black[i].type != NONE)
             determine_available_positions(&conf->black[i], conf);
     }
-    printf("all pieces updated\n");
 }
 
 void invalidate_position(pos_t *position) {

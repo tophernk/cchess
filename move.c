@@ -10,6 +10,10 @@ int movePiece(piece_t *p, int to_x, int to_y, config_t *conf) {
             if (available_pos.x == to_x && available_pos.y == to_y) {
                 conf->board[p->current_position.x][p->current_position.y] = NONE;
 
+                if (conf->board[to_x][to_y] != NONE) {
+                    remove_piece(to_x, to_y, conf);
+                }
+
                 p->current_position.x = to_x;
                 p->current_position.y = to_y;
                 conf->board[to_x][to_y] = p->type;
@@ -20,6 +24,24 @@ int movePiece(piece_t *p, int to_x, int to_y, config_t *conf) {
         }
     }
     return 0;
+}
+
+void remove_piece(int x, int y, config_t *cfg) {
+    piece_type_t piece_type = cfg->board[x][y];
+    piece_t *piece = NULL;
+    if (piece_type < 7) {
+        piece = cfg->white;
+    } else {
+        piece = cfg->black;
+    }
+    while(piece->current_position.x != x && piece->current_position.y != y) {
+       piece++;
+    }
+    invalidate_position(&piece->current_position);
+    piece->type = NONE;
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        invalidate_position(&piece->available_positions[i]);
+    }
 }
 
 int cpuMove(config_t *conf) {
@@ -51,11 +73,6 @@ move_t calculateMove(config_t *conf, int depth) {
                         best_move_index = y;
                     }
                     tmp = backup;
-
-                    printf("print board from calculate move\n");
-                    printBoard(conf);
-                    printf("print tmp board from calculate move\n");
-                    printBoard(&tmp);
                 }
             }
         }
@@ -78,8 +95,9 @@ int is_white_piece(piece_type_t type) {
         case QUEEN_W:
         case KING_W:
             return 1;
+        default:
+            return 0;
     }
-    return 0;
 }
 
 int isValidMove(config_t *conf, int xfrom, int yfrom, int xto, int yto) {
@@ -115,15 +133,15 @@ int isValidMove(config_t *conf, int xfrom, int yfrom, int xto, int yto) {
         if (xmove == 2 && ymove == 1)
             return 1;
         return 0;
-    } else if (piece % 10 == 3) {
+    } else if (piece == BISHOP_W || piece == BISHOP_B) {
         return isValidBishopMove(xmove, ymove);
-    } else if (piece % 10 == 5) {
+    } else if (piece == ROOK_W || piece == ROOK_B) {
         return isValidRookMove(xmove, ymove);
-    } else if (piece % 10 == 6) {
+    } else if (piece == KING_W || piece == KING_B) {
         if (xmove > 1 || ymove > 1)
             return 0;
         return 1;
-    } else if (piece % 10 == 9) {
+    } else if (piece == QUEEN_W || piece == QUEEN_B) {
         return isValidQueenMove(xmove, ymove);
     } else {
         result = 0;
