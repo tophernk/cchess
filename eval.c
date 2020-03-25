@@ -9,5 +9,5 @@ int evalConf(config_t *in_conf)
         white += in_conf->white[i].type;
         black += in_conf->black[i].type;
     }
-    return white - black;
+    return black - white;
 }

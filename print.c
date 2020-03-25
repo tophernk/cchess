@@ -5,31 +5,35 @@ void printBoard(config_t *conf) {
     for (int x = 0; x < BOARD_SIZE; x++) {
         printSolidLine();
         printIntermediateLine();
+        printf("  %d ", 8 - x);
         for (int y = 0; y < BOARD_SIZE; y++) {
             printPiece(conf->board[y][x]);
         }
-        printf("\n");
+        printf("|\n");
         printIntermediateLine();
     }
     printSolidLine();
+    printf("        A       B       C       D       E       F       G       H    \n");
 }
 
 void printSolidLine() {
+    printf("    ");
     for (int i = 0; i < BOARD_SIZE * 8; i++) {
-        printf("#");
+        printf("-");
     }
-    printf("\n");
+    printf("-\n");
 }
 
 void printIntermediateLine() {
+    printf("    ");
     for (int i = 0; i < BOARD_SIZE; i++) {
-        printf("#       ");
+        printf("|       ");
     }
-    printf("\n");
+    printf("|\n");
 }
 
 void printPiece(piece_type_t p) {
-    printf("#   ");
+    printf("|   ");
 
     switch (p % 10) {
         case PAWN_W:

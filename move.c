@@ -70,6 +70,7 @@ move_t calculateMove(config_t *conf, int depth) {
                     if (to_position.x != -1) {
                         movePiece(&tmp.black[x], to_position.x, to_position.y, &tmp);
                         int eval = evalConf(&tmp);
+                        printf("eval: %d ", eval);
                         if (eval > best_eval) {
                             best_eval = eval;
                             best_piece_index = x;
@@ -81,6 +82,7 @@ move_t calculateMove(config_t *conf, int depth) {
             }
         }
     }
+    printf("best eval: %d\n", best_eval);
     move_t result;
     result.p = &conf->black[best_piece_index];
     result.to_position = &conf->black[best_piece_index].available_positions[best_move_index];
@@ -143,7 +145,7 @@ int is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t pi
     if (xmove == 1 && piece_at_to_position == NONE) {
         return 0;
     }
-    if (ymove == 1 && piece_at_to_position != NONE) {
+    if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
         return 0;
     }
     if (piece == PAWN_W && yfrom - yto != 1) {
