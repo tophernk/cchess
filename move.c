@@ -48,7 +48,7 @@ int cpuMove(config_t *conf) {
     printf("cpu move...\n");
     int piece_moved = 0;
     move_t next_move = calculateMove(conf, 2);
-    if (next_move.p->type != NONE) {
+    if (next_move.p->type != NONE && next_move.to_position->x != -1) {
         piece_moved = movePiece(next_move.p, next_move.to_position->x, next_move.to_position->y, conf);
     }
     printBoard(conf);
@@ -105,7 +105,6 @@ int is_white_piece(piece_type_t type) {
 }
 
 int isValidMove(config_t *conf, int xfrom, int yfrom, int xto, int yto) {
-    int result = 1;
     piece_type_t piece = conf->board[xfrom][yfrom];
     int xmove = abs(xfrom - xto);
     int ymove = abs(yfrom - yto);
@@ -121,21 +120,19 @@ int isValidMove(config_t *conf, int xfrom, int yfrom, int xto, int yto) {
     if (piece == PAWN_W || piece == PAWN_B) {
         return is_valid_pawn_move(xmove, ymove, yfrom, yto, piece, piece_at_to_position);
     } else if (piece == KNIGHT_W || piece == KNIGHT_B) {
-        return is_valid_knight_move(xfrom, xto, yfrom, yto);
+        return is_valid_knight_move(xfrom, yfrom, xto, yto);
     } else if (piece == BISHOP_W || piece == BISHOP_B) {
-        return is_valid_bishop_move(xmove, ymove);
+        return is_valid_bishop_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece == ROOK_W || piece == ROOK_B) {
-        return is_valid_rook_move(xmove, ymove);
+        return is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece == KING_W || piece == KING_B) {
         if (xmove > 1 || ymove > 1)
             return 0;
         return 1;
     } else if (piece == QUEEN_W || piece == QUEEN_B) {
-        return is_valid_queen_move(xmove, ymove);
-    } else {
-        result = 0;
+        return is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
     }
-    return result;
+    return 0;
 }
 
 int is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t piece, piece_type_t piece_at_to_position) {
@@ -157,7 +154,7 @@ int is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t pi
     return 1;
 }
 
-int is_valid_knight_move(int xfrom, int xto, int yfrom, int yto) {
+int is_valid_knight_move(int xfrom, int yfrom, int xto, int yto) {
     int xmove = abs(xfrom - xto);
     int ymove = abs(yfrom - yto);
 
@@ -168,19 +165,56 @@ int is_valid_knight_move(int xfrom, int xto, int yfrom, int yto) {
     return 0;
 }
 
-int is_valid_bishop_move(int xmove, int ymove) {
-    if (xmove != ymove)
-        return 0;
-    return 1;
-}
+int is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
+    int abs_xmove = abs(xfrom - xto);
+    int abs_ymove = abs(yfrom - yto);
 
-int is_valid_rook_move(int xmove, int ymove) {
-    if (xmove == 0 || ymove == 0)
+    int xmove = xfrom - xto;
+    int ymove = yfrom - yto;
+
+    if (abs_xmove == abs_ymove) {
+        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
+        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
+        while (y != yto) {
+            if (cfg->board[x][y] != NONE) {
+                return 0;
+            }
+            ymove > 0 ? y-- : y++;
+            xmove > 0 ? x-- : x++;
+        }
         return 1;
+    }
     return 0;
 }
 
-int is_valid_queen_move(int xmove, int ymove) {
-    return is_valid_bishop_move(xmove, ymove) || is_valid_rook_move(xmove, ymove);
+int is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
+    int xmove = xfrom - xto;
+    int ymove = yfrom - yto;
+
+    if (xmove == 0) {
+        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
+        while (y != yto) {
+            if (cfg->board[xto][y] != NONE) {
+                return 0;
+            }
+            ymove > 0 ? y-- : y++;
+        }
+        return 1;
+    }
+    if (ymove == 0) {
+        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
+        while (x != xto) {
+            if (cfg->board[x][yto] != NONE) {
+                return 0;
+            }
+            xmove > 0 ? x-- : x++;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
+    return is_valid_bishop_move(xfrom, yfrom, xto, yto, cfg) || is_valid_rook_move(xfrom, yfrom, xto, yto, cfg);
 }
 

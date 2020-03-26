@@ -36,7 +36,11 @@ config_t init() {
     }
 
     conf.white[0] = createPiece(PAWN_W, 0, 6, &conf);
-    conf.white[1] = createPiece(KNIGHT_W, 1, 7, &conf);
+    conf.white[1] = createPiece(PAWN_W, 1, 6, &conf);
+    conf.white[2] = createPiece(PAWN_W, 3, 6, &conf);
+    conf.white[3] = createPiece(KNIGHT_W, 1, 7, &conf);
+    conf.white[4] = createPiece(ROOK_W, 0, 7, &conf);
+    conf.white[5] = createPiece(BISHOP_W, 2, 7, &conf);
 
     conf.black[0] = createPiece(PAWN_B, 0, 1, &conf);
     conf.black[1] = createPiece(KNIGHT_B, 1, 0, &conf);
@@ -82,9 +86,17 @@ int main() {
         getchar(); // discard newline from input
         if (pieceMoved) {
             pieceMoved = cpuMove(&conf);
+
+            size_t size = sizeof(conf.white) / sizeof(conf.white[0]);
+            for (int i = 0; i < size; i++) {
+                if (conf.white[i].type != NONE)
+                    break;
+                if (i == size - 1)
+                    goto exit;
+            }
         }
     }
-
+    exit:
     printf("exit.. (no piece moved)\n");
 
     return 0;
