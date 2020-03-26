@@ -2,21 +2,21 @@
 #include "defintions.h"
 #include "pieces.h"
 
-int movePiece(piece_t *p, int to_x, int to_y, config_t *conf) {
-    if (p != NULL) {
-        for (int i = 0; i < sizeof(p->available_positions) / sizeof(p->available_positions[0]); i++) {
-            pos_t available_pos = p->available_positions[i];
+int movePiece(piece_t *piece, pos_t to, config_t *conf) {
+    if (piece != NULL) {
+        for (int i = 0; i < sizeof(piece->available_positions) / sizeof(piece->available_positions[0]); i++) {
+            pos_t available_pos = piece->available_positions[i];
 
-            if (available_pos.x == to_x && available_pos.y == to_y) {
-                conf->board[p->current_position.x][p->current_position.y] = NONE;
+            if (available_pos.x == to.x && available_pos.y == to.y) {
+                conf->board[piece->current_position.x][piece->current_position.y] = NONE;
 
-                if (conf->board[to_x][to_y] != NONE) {
-                    remove_piece(to_x, to_y, conf);
+                if (conf->board[to.x][to.y] != NONE) {
+                    remove_piece(to.x, to.y, conf);
                 }
 
-                p->current_position.x = to_x;
-                p->current_position.y = to_y;
-                conf->board[to_x][to_y] = p->type;
+                piece->current_position.x = to.x;
+                piece->current_position.y = to.y;
+                conf->board[to.x][to.y] = piece->type;
 
                 update_available_positions(conf);
                 return 1;
@@ -34,7 +34,7 @@ void remove_piece(int x, int y, config_t *cfg) {
     } else {
         piece = cfg->black;
     }
-    while (piece->current_position.x != x && piece->current_position.y != y) {
+    while (piece->current_position.x != x || piece->current_position.y != y) {
         piece++;
     }
     invalidate_position(&piece->current_position);
@@ -49,7 +49,7 @@ int cpuMove(config_t *conf) {
     int piece_moved = 0;
     move_t next_move = calculateMove(conf, 2);
     if (next_move.p->type != NONE && next_move.to_position->x != -1) {
-        piece_moved = movePiece(next_move.p, next_move.to_position->x, next_move.to_position->y, conf);
+        piece_moved = movePiece(next_move.p, *next_move.to_position, conf);
     }
     printBoard(conf);
     return piece_moved;
@@ -68,7 +68,7 @@ move_t calculateMove(config_t *conf, int depth) {
                 for (int y = 0; y < sizeof(tmp.black[x].available_positions) / sizeof(tmp.black[x].available_positions[0]); y++) {
                     pos_t to_position = tmp.black[x].available_positions[y];
                     if (to_position.x != -1) {
-                        movePiece(&tmp.black[x], to_position.x, to_position.y, &tmp);
+                        movePiece(&tmp.black[x], to_position, &tmp);
                         int eval = evalConf(&tmp);
                         printf("eval: %d ", eval);
                         if (eval > best_eval) {
@@ -117,20 +117,28 @@ int isValidMove(config_t *conf, int xfrom, int yfrom, int xto, int yto) {
             return 0;
     }
 
+    pos_t from;
+    from.x = xfrom;
+    from.y = yfrom;
+
+    pos_t to;
+    to.x = xto;
+    to.y = yto;
+
     if (piece == PAWN_W || piece == PAWN_B) {
         return is_valid_pawn_move(xmove, ymove, yfrom, yto, piece, piece_at_to_position);
     } else if (piece == KNIGHT_W || piece == KNIGHT_B) {
-        return is_valid_knight_move(xfrom, yfrom, xto, yto);
+        return is_valid_knight_move(from, to);
     } else if (piece == BISHOP_W || piece == BISHOP_B) {
-        return is_valid_bishop_move(xfrom, yfrom, xto, yto, conf);
+        return is_valid_bishop_move(from, to, conf);
     } else if (piece == ROOK_W || piece == ROOK_B) {
-        return is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
+        return is_valid_rook_move(from, to, conf);
     } else if (piece == KING_W || piece == KING_B) {
         if (xmove > 1 || ymove > 1)
             return 0;
         return 1;
     } else if (piece == QUEEN_W || piece == QUEEN_B) {
-        return is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
+        return is_valid_queen_move(from, to, conf);
     }
     return 0;
 }
@@ -154,9 +162,9 @@ int is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t pi
     return 1;
 }
 
-int is_valid_knight_move(int xfrom, int yfrom, int xto, int yto) {
-    int xmove = abs(xfrom - xto);
-    int ymove = abs(yfrom - yto);
+int is_valid_knight_move(pos_t from, pos_t to) {
+    int xmove = abs(from.x - to.x);
+    int ymove = abs(from.y - to.y);
 
     if (xmove == 1 && ymove == 2)
         return 1;
@@ -165,17 +173,17 @@ int is_valid_knight_move(int xfrom, int yfrom, int xto, int yto) {
     return 0;
 }
 
-int is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    int abs_xmove = abs(xfrom - xto);
-    int abs_ymove = abs(yfrom - yto);
+int is_valid_bishop_move(pos_t from, pos_t to, config_t *cfg) {
+    int abs_xmove = abs(from.x - to.x);
+    int abs_ymove = abs(from.y - to.y);
 
-    int xmove = xfrom - xto;
-    int ymove = yfrom - yto;
+    int xmove = from.x - to.x;
+    int ymove = from.y - to.y;
 
     if (abs_xmove == abs_ymove) {
-        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
-        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
-        while (y != yto) {
+        int y = ymove > 0 ? from.y - 1 : from.y + 1;
+        int x = xmove > 0 ? from.x - 1 : from.x + 1;
+        while (y != to.y) {
             if (cfg->board[x][y] != NONE) {
                 return 0;
             }
@@ -187,14 +195,14 @@ int is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) 
     return 0;
 }
 
-int is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    int xmove = xfrom - xto;
-    int ymove = yfrom - yto;
+int is_valid_rook_move(pos_t from, pos_t to, config_t *cfg) {
+    int xmove = from.x - to.x;
+    int ymove = from.y - to.y;
 
     if (xmove == 0) {
-        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
-        while (y != yto) {
-            if (cfg->board[xto][y] != NONE) {
+        int y = ymove > 0 ? from.y - 1 : from.y + 1;
+        while (y != to.y) {
+            if (cfg->board[to.x][y] != NONE) {
                 return 0;
             }
             ymove > 0 ? y-- : y++;
@@ -202,9 +210,9 @@ int is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
         return 1;
     }
     if (ymove == 0) {
-        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
-        while (x != xto) {
-            if (cfg->board[x][yto] != NONE) {
+        int x = xmove > 0 ? from.x - 1 : from.x + 1;
+        while (x != to.x) {
+            if (cfg->board[x][to.y] != NONE) {
                 return 0;
             }
             xmove > 0 ? x-- : x++;
@@ -214,7 +222,7 @@ int is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
     return 0;
 }
 
-int is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    return is_valid_bishop_move(xfrom, yfrom, xto, yto, cfg) || is_valid_rook_move(xfrom, yfrom, xto, yto, cfg);
+int is_valid_queen_move(pos_t from, pos_t to, config_t *cfg) {
+    return is_valid_bishop_move(from, to, cfg) || is_valid_rook_move(from, to, cfg);
 }
 

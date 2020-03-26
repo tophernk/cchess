@@ -35,12 +35,13 @@ config_t init() {
         conf.black[i] = createPiece(NONE, -1, -1, &conf);
     }
 
-    conf.white[0] = createPiece(PAWN_W, 0, 6, &conf);
+//    conf.white[0] = createPiece(PAWN_W, 0, 6, &conf);
     conf.white[1] = createPiece(PAWN_W, 1, 6, &conf);
     conf.white[2] = createPiece(PAWN_W, 3, 6, &conf);
     conf.white[3] = createPiece(KNIGHT_W, 1, 7, &conf);
     conf.white[4] = createPiece(ROOK_W, 0, 7, &conf);
     conf.white[5] = createPiece(BISHOP_W, 2, 7, &conf);
+    conf.white[6] = createPiece(QUEEN_W, 3, 7, &conf);
 
     conf.black[0] = createPiece(PAWN_B, 0, 1, &conf);
     conf.black[1] = createPiece(KNIGHT_B, 1, 0, &conf);
@@ -70,13 +71,17 @@ int main() {
         from_y = (from_y - BOARD_SIZE) * -1;
         to_y = (to_y - BOARD_SIZE) * -1;
 
-        piece_t *pc = getPiece(from_x, from_y, &conf);
+        piece_t *piece = getPiece(from_x, from_y, &conf);
 
-        if (pc == NULL) {
+        if (piece == NULL) {
             break;
         }
 
-        if ((pieceMoved = movePiece(pc, to_x, to_y, &conf))) {
+        pos_t to;
+        to.x = to_x;
+        to.y = to_y;
+
+        if ((pieceMoved = movePiece(piece, to, &conf))) {
             printBoard(&conf);
         } else {
             printf("invalid move\n");
