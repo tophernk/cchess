@@ -2,7 +2,18 @@
 #include "defintions.h"
 #include "pieces.h"
 
-int movePiece(piece_t *piece, pos_t to, config_t *conf) {
+typedef struct {
+    int min;
+    int max;
+} score_t;
+
+score_t execute_best_move(config_t *config, piece_color_t color_to_move, path_node_t *best_path, path_node_t *current_path, int current_depth);
+
+path_node_t create_path_node();
+
+int move_piece(move_t move, config_t *conf) {
+    piece_t *piece = move.piece;
+    pos_t to = move.to_position;
     if (piece != NULL) {
         for (int i = 0; i < sizeof(piece->available_positions) / sizeof(piece->available_positions[0]); i++) {
             pos_t available_pos = piece->available_positions[i];
@@ -19,11 +30,12 @@ int movePiece(piece_t *piece, pos_t to, config_t *conf) {
                 conf->board[to.x][to.y] = piece->type;
 
                 update_available_positions(conf);
-                return 1;
+
+                return evalConf(conf, BLACK);
             }
         }
     }
-    return 0;
+    return -9999;
 }
 
 void remove_piece(int x, int y, config_t *cfg) {
@@ -47,45 +59,110 @@ void remove_piece(int x, int y, config_t *cfg) {
 int cpuMove(config_t *conf) {
     printf("cpu move...\n");
     int piece_moved = 0;
-    move_t next_move = calculateMove(conf, 2);
-    if (next_move.p->type != NONE && next_move.to_position->x != -1) {
-        piece_moved = movePiece(next_move.p, *next_move.to_position, conf);
+    move_t next_move = calculate_move(conf);
+    if (next_move.piece->type != NONE && next_move.to_position.x != -1) {
+        piece_moved = move_piece(next_move, conf);
     }
     printBoard(conf);
     return piece_moved;
 }
 
-move_t calculateMove(config_t *conf, int depth) {
-    config_t tmp = *conf;
-    config_t backup = *conf;
-    int best_piece_index = 0;
-    int best_move_index = 0;
-    int best_eval = -1000;
+move_t calculate_move(config_t *conf) {
+    config_t tmp_conf = *conf;
 
-    for (int i = 0; i < depth; i++) {
-        for (int x = 0; x < sizeof(tmp.black) / sizeof(tmp.black[0]); x++) {
-            if (tmp.black[x].type != NONE) {
-                for (int y = 0; y < sizeof(tmp.black[x].available_positions) / sizeof(tmp.black[x].available_positions[0]); y++) {
-                    pos_t to_position = tmp.black[x].available_positions[y];
-                    if (to_position.x != -1) {
-                        movePiece(&tmp.black[x], to_position, &tmp);
-                        int eval = evalConf(&tmp);
-                        printf("eval: %d ", eval);
-                        if (eval > best_eval) {
-                            best_eval = eval;
-                            best_piece_index = x;
-                            best_move_index = y;
-                        }
-                        tmp = backup;
+    path_node_t best_path[DEPTH];
+    path_node_t current_path[DEPTH];
+
+    for (int i = 0; i < DEPTH; i++) {
+        best_path[i] = create_path_node();
+        current_path[i] = create_path_node();
+    }
+
+    for (int i = 0; i < DEPTH; i++) {
+        piece_color_t turn_color = i % 2 == 0 ? BLACK : WHITE;
+        execute_best_move(&tmp_conf, turn_color, best_path, current_path, i);
+    }
+
+    path_node_t move_to_play = best_path[0];
+
+    move_t result;
+    result.piece = &conf->black[move_to_play.piece_index];
+    result.to_position = move_to_play.position;
+
+    printf("-----------------\n");
+    printf("best path: ");
+    print_path(best_path, DEPTH);
+
+    printf("=> best move: ");
+    print_eval_move(result, best_path[DEPTH - 1].score);
+    printf("\n");
+
+    return result;
+}
+
+path_node_t create_path_node() {
+    path_node_t node;
+    node.piece = NONE;
+    pos_t pos;
+    pos.x = -1;
+    pos.y = -1;
+    node.position = pos;
+    node.score = -9999;
+    node.piece_index = 0;
+    return node;
+}
+
+score_t execute_best_move(config_t *config, piece_color_t color_to_move, path_node_t *best_path, path_node_t *current_path, int current_depth) {
+    int min_score = 9999;
+    int max_score = -9999;
+    int best_move_piece_index = 0;
+    int best_move_position_index = 0;
+    config_t tmp_conf = *config;
+
+    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
+        piece_t *pieces = color_to_move == WHITE ? tmp_conf.white : tmp_conf.black;
+        if (pieces[i].type != NONE) {
+            for (int x = 0; x < MAX_POSITIONS; x++) {
+                move_t move;
+                move.piece = color_to_move == WHITE ? &tmp_conf.white[i] : &tmp_conf.black[i];
+                move.to_position = pieces[i].available_positions[x];
+                if (move.to_position.x != -1) {
+                    printf("exec move: ");
+                    int score = move_piece(move, &tmp_conf);
+                    print_eval_move(move, score);
+                    printf("\n");
+
+                    path_node_t path_node = current_path[current_depth];
+                    path_node.score = score;
+                    path_node.piece = move.piece->type;
+                    path_node.position = move.to_position;
+                    path_node.piece_index = i;
+                    current_path[current_depth] = path_node;
+
+                    print_path(current_path, DEPTH);
+
+                    if (score > max_score) {
+                        max_score = score;
+                        best_move_piece_index = i;
+                        best_move_position_index = x;
+                        best_path[current_depth] = path_node;
                     }
+
+                    tmp_conf = (*config);
                 }
             }
         }
     }
-    printf("best eval: %d\n", best_eval);
-    move_t result;
-    result.p = &conf->black[best_piece_index];
-    result.to_position = &conf->black[best_piece_index].available_positions[best_move_index];
+    piece_t *pieces = color_to_move == WHITE ? config->white : config->black;
+    move_t best_move;
+    best_move.piece = &pieces[best_move_piece_index];
+    best_move.to_position = pieces[best_move_piece_index].available_positions[best_move_position_index];
+    if (best_move.piece->type != NONE && best_move.to_position.x != -1) {
+        move_piece(best_move, config);
+    }
+    score_t result;
+    result.min = min_score;
+    result.max = max_score;
 
     return result;
 }

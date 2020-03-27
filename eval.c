@@ -1,11 +1,11 @@
 #include "defintions.h"
 
-int evalConf(config_t *in_conf) {
+int evalConf(config_t *config, piece_color_t color) {
     int white = 0;
     int black = 0;
-    for (int i = 0; i < sizeof(in_conf->white) / sizeof(in_conf->white[0]); i++) {
-        white += in_conf->white[i].type;
-        black += in_conf->black[i].type;
+    for (int i = 0; i < sizeof(config->white) / sizeof(config->white[0]); i++) {
+        white += config->white[i].type;
+        black += config->black[i].type;
     }
-    return black - white;
+    return color == BLACK ? black - white : white - black;
 }

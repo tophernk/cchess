@@ -81,7 +81,13 @@ int main() {
         to.x = to_x;
         to.y = to_y;
 
-        if ((pieceMoved = movePiece(piece, to, &conf))) {
+        move_t move;
+        move.to_position = to;
+        move.piece = piece;
+
+        int eval = move_piece(move, &conf);
+        if ((eval != -9999)) {
+            pieceMoved = 1;
             printBoard(&conf);
         } else {
             printf("invalid move\n");

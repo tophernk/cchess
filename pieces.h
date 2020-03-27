@@ -17,6 +17,11 @@ typedef enum {
     QUEEN_B
 } piece_type_t;
 
+typedef enum {
+    BLACK,
+    WHITE
+} piece_color_t;
+
 int is_white_piece(piece_type_t);
 
 #endif //CCHESS_PIECES_H

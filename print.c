@@ -34,39 +34,50 @@ void printIntermediateLine() {
 
 void printPiece(piece_type_t p) {
     printf("|   ");
-
-    switch (p % 10) {
-        case PAWN_W:
-        case PAWN_B:
-            printf("P");
-            break;
-        case KNIGHT_W:
-        case KNIGHT_B:
-            printf("N");
-            break;
-        case BISHOP_W:
-        case BISHOP_B:
-            printf("B");
-            break;
-        case ROOK_W:
-        case ROOK_B:
-            printf("R");
-            break;
-        case QUEEN_W:
-        case QUEEN_B:
-            printf("Q");
-            break;
-        case KING_W:
-        case KING_B:
-            printf("K");
-            break;
-        default:
-            printf(" ");
-    }
+    printf("%c", piece_to_char(p));
 
     if (p > QUEEN_W) {
         printf("*  ");
     } else {
         printf("   ");
     }
+}
+
+char piece_to_char(piece_type_t type) {
+    switch (type) {
+        case PAWN_W:
+        case PAWN_B:
+            return 'P';
+        case KNIGHT_W:
+        case KNIGHT_B:
+            return 'N';
+        case BISHOP_W:
+        case BISHOP_B:
+            return 'B';
+        case ROOK_W:
+        case ROOK_B:
+            return 'R';
+        case QUEEN_W:
+        case QUEEN_B:
+            return 'Q';
+        case KING_W:
+        case KING_B:
+            return 'K';
+        default:
+            return ' ';
+    }
+}
+
+void print_eval_move(move_t move, int score) {
+    printf("%c:%c%d=%d ", piece_to_char(move.piece->type), move.to_position.x + 'a', 8 - move.to_position.y, score);
+}
+
+void print_path(path_node_t *path, int size) {
+    for (int i = 0; i < size; i++) {
+        path_node_t node = path[i];
+        if (node.piece != NONE) {
+            printf("(%c:%c%d=%d) -> ", piece_to_char(node.piece), node.position.x + 'a', 8 - node.position.y, node.score);
+        }
+    }
+    printf("X\n");
 }
