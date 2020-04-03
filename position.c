@@ -46,3 +46,8 @@ int position_get_y(position_t *position) {
 void position_set_y(position_t *position, int y) {
     position->y = y;
 }
+
+void position_copy(position_t *src, position_t *dst) {
+    dst->x = src->x;
+    dst->y = src->y;
+}

@@ -11,6 +11,8 @@ void config_ctor(config_t *);
 
 void config_dtor(config_t *);
 
+void config_copy(config_t *src, config_t *dst);
+
 int config_eval(config_t *config, piece_color_t color);
 
 void config_update_available_positions(config_t *);

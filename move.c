@@ -27,11 +27,11 @@ void move_print(move_t *move, int score) {
 }
 
 void move_set_to_position(move_t *move, position_t *position) {
-    move->to_position = position;
+    position_copy(position, move->to_position);
 }
 
 void move_set_piece(move_t *move, piece_t *piece) {
-    move->piece = piece;
+    piece_copy(piece, move->piece);
 }
 
 piece_t *move_get_piece(move_t *move) {

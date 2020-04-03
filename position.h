@@ -9,6 +9,8 @@ void position_ctor(position_t*);
 
 void position_dtor(position_t*);
 
+void position_copy(position_t *src, position_t *dst);
+
 int position_get_x(position_t*);
 
 void position_set_x(position_t*, int x);

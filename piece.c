@@ -104,3 +104,13 @@ void piece_set_current_position(piece_t *piece, int x, int y) {
     position_set_x(piece->current_position, x);
     position_set_y(piece->current_position, y);
 }
+
+void piece_copy(piece_t *src, piece_t *dst) {
+    dst->type = src->type;
+    dst->current_position = position_new();
+    position_copy(src->current_position, dst->current_position);
+    for(int i = 0; i < MAX_POSITIONS; i++) {
+        dst->available_positions[i] = position_new();
+        position_copy(src->available_positions[i], dst->available_positions[i]);
+    }
+}
