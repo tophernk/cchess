@@ -55,6 +55,7 @@ int main() {
         if (pieceMoved) {
             pieceMoved = config_move_cpu(config);
             if(!config_move_available(config, WHITE)) {
+                printf("no move available for white\n");
                 break;
             }
        }

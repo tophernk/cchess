@@ -419,7 +419,11 @@ int config_move_available(config_t *config, piece_color_t color) {
     piece_t **piece = color == WHITE ? config->white : config->black;
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         if (piece_get_type(piece[i]) != NONE) {
-            return 1;
+            for (int x = 0; x < MAX_POSITIONS; x++) {
+                if (position_valid(piece_get_available_position(piece[i], x))) {
+                    return 1;
+                }
+            }
         }
     }
     return 0;
@@ -442,10 +446,10 @@ void config_copy(config_t *src, config_t *dst) {
         }
 
         for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-           dst->white[i] = piece_new();
-           piece_copy(src->white[i], dst->white[i]);
-           dst->black[i] = piece_new();
-           piece_copy(src->black[i], dst->black[i]);
+            dst->white[i] = piece_new();
+            piece_copy(src->white[i], dst->white[i]);
+            dst->black[i] = piece_new();
+            piece_copy(src->black[i], dst->black[i]);
         }
     }
 }
