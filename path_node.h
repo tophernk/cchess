@@ -25,6 +25,8 @@ int path_node_get_score(path_node_t *);
 
 void path_node_set_piece_type(path_node_t *, piece_type_t);
 
+piece_type_t path_node_get_piece_type(path_node_t *);
+
 void path_node_print(path_node_t **path, int size);
 
 #endif //CCHESS_PATH_NODE_H

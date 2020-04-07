@@ -67,3 +67,7 @@ position_t *path_node_get_from_position(path_node_t *node) {
 void path_node_set_piece_type(path_node_t *node, piece_type_t type) {
     node->piece_type = type;
 }
+
+piece_type_t path_node_get_piece_type(path_node_t *node) {
+   return node->piece_type;
+}

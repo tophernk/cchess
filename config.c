@@ -116,8 +116,8 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
     int best_move_position_index = 0;
     config_t *tmp_conf = config_new();
     config_copy(config, tmp_conf);
-    move_t *move = move_new();
-    move_ctor(move);
+    path_node_t *move = path_node_new();
+    path_node_ctor(move);
 
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         piece_t **pieces = color_to_move == WHITE ? tmp_conf->white : tmp_conf->black;
@@ -126,18 +126,18 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
                 piece_t *piece_to_move = color_to_move == WHITE ? tmp_conf->white[i] : tmp_conf->black[i];
                 position_t *available_position = piece_get_available_position(piece_to_move, x);
                 if (position_get_x(available_position) != -1) {
-                    move_set_piece(move, piece_to_move);
-                    move_set_to_position(move, available_position);
+                    path_node_set_piece_type(move, piece_get_type(piece_to_move));
+                    path_node_set_from_position(move, piece_get_current_position(piece_to_move));
+                    path_node_set_to_position(move, available_position);
                     printf("exec move: ");
                     int score = config_execute_move(tmp_conf, move);
-                    move_print(move, score);
                     printf("\n");
 
                     path_node_t *current_path_node = current_path[current_depth];
                     path_node_ctor(current_path_node);
                     path_node_set_piece_type(current_path_node, piece_get_type(piece_to_move));
-                    path_node_set_from_position(current_path_node, piece_get_current_position(piece_to_move));
-                    path_node_set_to_position(current_path_node, move_get_to_position(move));
+                    path_node_set_from_position(current_path_node, path_node_get_from_position(move));
+                    path_node_set_to_position(current_path_node, path_node_get_to_position(move));
                     path_node_set_score(current_path_node, score);
                     path_node_print(current_path, DEPTH);
 
@@ -148,8 +148,8 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
                         path_node_t *best_path_node = best_path[current_depth];
                         path_node_ctor(best_path_node);
                         path_node_set_piece_type(best_path_node, piece_get_type(piece_to_move));
-                        path_node_set_from_position(best_path_node, piece_get_current_position(piece_to_move));
-                        path_node_set_to_position(best_path_node, move_get_to_position(move));
+                        path_node_set_from_position(best_path_node, path_node_get_from_position(move));
+                        path_node_set_to_position(best_path_node, path_node_get_to_position(move));
                         path_node_set_score(best_path_node, score);
                     }
 
@@ -161,9 +161,10 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
 
     piece_t **pieces = color_to_move == WHITE ? config->white : config->black;
     piece_t *best_piece = pieces[best_move_piece_index];
-    move_set_piece(move, best_piece);
+    path_node_set_piece_type(move, piece_get_type(best_piece));
     position_t *best_position = piece_get_available_position(best_piece, best_move_position_index);
-    move_set_to_position(move, best_position);
+    path_node_set_to_position(move, best_position);
+    path_node_set_from_position(move, piece_get_current_position(best_piece));
 
     if (piece_get_type(best_piece) != NONE && position_get_x(best_position) != -1) {
         config_execute_move(config, move);
@@ -173,7 +174,7 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
     result.min = min_score;
     result.max = max_score;
 
-    move_dtor(move);
+    path_node_dtor(move);
     free(move);
 
     config_dtor(tmp_conf);
@@ -304,31 +305,25 @@ int __abs(int x) {
     return x;
 }
 
-int config_execute_move(config_t *conf, move_t *move) {
-    piece_t *piece = move_get_piece(move);
-    position_t *to = move_get_to_position(move);
-    if (piece != NULL) {
-        for (int i = 0; i < MAX_POSITIONS; i++) {
-            position_t *available_pos = piece_get_available_position(piece, i);
+int config_execute_move(config_t *conf, path_node_t *move) {
+    position_t *from = path_node_get_from_position(move);
+    position_t *to = path_node_get_to_position(move);
+    if (from != NULL && to != NULL) {
+        piece_t *piece = config_get_piece(conf, piece_get_color(path_node_get_piece_type(move)), path_node_get_from_position(move));
+        conf->board[position_get_x(from)][position_get_y(from)] = NONE;
 
-            if (position_equal(available_pos, to)) {
-                position_t *current_position = piece_get_current_position(piece);
-                conf->board[position_get_x(current_position)][position_get_y(current_position)] = NONE;
-
-                int xto = position_get_x(to);
-                int yto = position_get_y(to);
-                if (conf->board[xto][yto] != NONE) {
-                    config_remove_piece(conf, to);
-                }
-
-                piece_set_current_position(piece, xto, yto);
-                conf->board[xto][yto] = piece_get_type(piece);
-
-                config_update_available_positions(conf);
-
-                return config_eval(conf, BLACK);
-            }
+        int xto = position_get_x(to);
+        int yto = position_get_y(to);
+        if (conf->board[xto][yto] != NONE) {
+            config_remove_piece(conf, to);
         }
+
+        piece_set_current_position(piece, xto, yto);
+        conf->board[xto][yto] = piece_get_type(piece);
+
+        config_update_available_positions(conf);
+
+        return config_eval(conf, BLACK);
     }
     return -9999;
 }
@@ -358,22 +353,22 @@ void config_remove_piece(config_t *cfg, position_t *position) {
 int config_move_cpu(config_t *conf) {
     printf("cpu move...\n");
     int piece_moved = 0;
-    move_t *next_move = move_new();
-    move_ctor(next_move);
+    path_node_t *next_move = path_node_new();
+    path_node_ctor(next_move);
     config_calculate_move(conf, next_move);
 
-    if (piece_get_type(move_get_piece(next_move)) != NONE && position_valid(move_get_to_position(next_move))) {
+    if (path_node_get_piece_type(next_move) != NONE && position_valid(path_node_get_to_position(next_move))) {
         piece_moved = config_execute_move(conf, next_move);
     }
     config_print(conf);
 
-    move_dtor(next_move);
+    path_node_dtor(next_move);
     free(next_move);
 
     return piece_moved;
 }
 
-void config_calculate_move(config_t *conf, move_t *calculated_move) {
+void config_calculate_move(config_t *conf, path_node_t *calculated_move) {
     config_t *tmp_conf = config_new();
     config_copy(conf, tmp_conf);
 
@@ -395,16 +390,14 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
 
     path_node_t *node_to_play = best_path[0];
     piece_t *piece_to_move = config_get_piece(conf, BLACK, path_node_get_from_position(node_to_play));
-    move_set_piece(calculated_move, piece_to_move);
-    position_copy(path_node_get_to_position(node_to_play), move_get_to_position(calculated_move));
+    path_node_set_piece_type(calculated_move, piece_get_type(piece_to_move));
+    path_node_set_from_position(calculated_move, path_node_get_from_position(node_to_play));
+    path_node_set_to_position(calculated_move, path_node_get_to_position(node_to_play));
+    path_node_set_score(calculated_move, path_node_get_score(node_to_play));
 
     printf("-----------------\n");
     printf("best path: ");
     path_node_print(best_path, DEPTH);
-
-    printf("=> best move: ");
-    move_print(calculated_move, path_node_get_score(node_to_play));
-    printf("\n");
 
     for (int i = 0; i < DEPTH; i++) {
         path_node_dtor(best_path[i]);

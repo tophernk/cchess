@@ -15,8 +15,8 @@ int main() {
     position_t *to = position_new();
     position_ctor(to);
 
-    move_t *move = move_new();
-    move_ctor(move);
+    path_node_t *move = path_node_new();
+    path_node_ctor(move);
 
     int pieceMoved = 1;
     while (pieceMoved) {
@@ -39,8 +39,9 @@ int main() {
             break;
         }
 
-        move_set_to_position(move, to);
-        move_set_piece(move, piece);
+        path_node_set_from_position(move, from);
+        path_node_set_to_position(move, to);
+        path_node_set_piece_type(move, piece_get_type(piece));
 
         int eval = config_execute_move(config, move);
         if ((eval != -9999)) {
@@ -66,7 +67,7 @@ int main() {
     free(from);
     position_dtor(to);
     free(to);
-    move_dtor(move);
+    path_node_dtor(move);
     free(move);
     config_dtor(config);
     free(config);
