@@ -47,7 +47,9 @@ void config_ctor(config_t *config) {
     }
 
     __config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
+    __config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
     __config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
+    __config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
 
     config_update_available_positions(config);
 }
@@ -310,20 +312,22 @@ int config_execute_move(config_t *conf, path_node_t *move) {
     position_t *to = path_node_get_to_position(move);
     if (from != NULL && to != NULL) {
         piece_t *piece = config_get_piece(conf, piece_get_color(path_node_get_piece_type(move)), path_node_get_from_position(move));
-        conf->board[position_get_x(from)][position_get_y(from)] = NONE;
+        if(config_valid_move(conf, piece, position_get_x(to), position_get_y(to))) {
+            conf->board[position_get_x(from)][position_get_y(from)] = NONE;
 
-        int xto = position_get_x(to);
-        int yto = position_get_y(to);
-        if (conf->board[xto][yto] != NONE) {
-            config_remove_piece(conf, to);
+            int xto = position_get_x(to);
+            int yto = position_get_y(to);
+            if (conf->board[xto][yto] != NONE) {
+                config_remove_piece(conf, to);
+            }
+
+            piece_set_current_position(piece, xto, yto);
+            conf->board[xto][yto] = piece_get_type(piece);
+
+            config_update_available_positions(conf);
+
+            return config_eval(conf, BLACK);
         }
-
-        piece_set_current_position(piece, xto, yto);
-        conf->board[xto][yto] = piece_get_type(piece);
-
-        config_update_available_positions(conf);
-
-        return config_eval(conf, BLACK);
     }
     return -9999;
 }

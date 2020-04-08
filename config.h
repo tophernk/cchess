@@ -18,8 +18,6 @@ int config_eval(config_t *config, piece_color_t color);
 
 void config_update_available_positions(config_t *);
 
-void config_determine_available_positions(config_t *, piece_t *);
-
 piece_t *config_get_piece(config_t *, piece_color_t, position_t *);
 
 void config_remove_piece(config_t *cfg, position_t *);
