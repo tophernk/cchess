@@ -342,11 +342,10 @@ void config_remove_piece(config_t *cfg, position_t *position) {
     } else {
         piece = cfg->black;
     }
-    position_t *current_position = piece_get_current_position(*piece);
-    while (!position_equal(current_position, position)) {
+    while (!position_equal(piece_get_current_position(*piece), position)) {
         piece++;
     }
-    position_invalidate(current_position);
+    position_invalidate(piece_get_current_position(*piece));
     piece_set_type(*piece, NONE);
 
     for (int i = 0; i < MAX_POSITIONS; i++) {
