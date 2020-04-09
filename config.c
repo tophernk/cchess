@@ -5,11 +5,6 @@
 #include "config_p.h"
 #include "path_node.h"
 
-typedef struct {
-    int min;
-    int max;
-} score_t;
-
 int __is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t piece, piece_type_t piece_at_to_position);
 
 int __is_valid_knight_move(int xfrom, int yfrom, int xto, int yto);
@@ -26,7 +21,7 @@ void __determine_available_positions(piece_t *, config_t *);
 
 int __abs(int);
 
-score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth);
+void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth);
 
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
@@ -111,11 +106,13 @@ void __determine_available_positions(piece_t *piece, config_t *conf) {
     }
 }
 
-score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth) {
-    int min_score = 9999;
+void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth) {
+    if (current_depth == DEPTH) {
+        path_node_print(current_path, DEPTH);
+        // eval and compare current path to best path
+        return;
+    }
     int max_score = -9999;
-    int best_move_piece_index = 0;
-    int best_move_position_index = 0;
     config_t *tmp_conf = config_new();
     config_copy(config, tmp_conf);
     path_node_t *move = path_node_new();
@@ -131,9 +128,7 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
                     path_node_set_piece_type(move, piece_get_type(piece_to_move));
                     path_node_set_from_position(move, piece_get_current_position(piece_to_move));
                     path_node_set_to_position(move, available_position);
-                    printf("exec move: ");
                     int score = config_execute_move(tmp_conf, move);
-                    printf("\n");
 
                     path_node_t *current_path_node = current_path[current_depth];
                     path_node_ctor(current_path_node);
@@ -141,12 +136,9 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
                     path_node_set_from_position(current_path_node, path_node_get_from_position(move));
                     path_node_set_to_position(current_path_node, path_node_get_to_position(move));
                     path_node_set_score(current_path_node, score);
-                    path_node_print(current_path, DEPTH);
 
                     if (score > max_score) {
                         max_score = score;
-                        best_move_piece_index = i;
-                        best_move_position_index = x;
                         path_node_t *best_path_node = best_path[current_depth];
                         path_node_ctor(best_path_node);
                         path_node_set_piece_type(best_path_node, piece_get_type(piece_to_move));
@@ -155,34 +147,19 @@ score_t __execute_best_move(config_t *config, piece_color_t color_to_move, path_
                         path_node_set_score(best_path_node, score);
                     }
 
+                    __execute_all_moves(tmp_conf, color_to_move == WHITE ? BLACK : WHITE, best_path, current_path, current_depth + 1);
+
                     config_copy(config, tmp_conf);
                 }
             }
         }
     }
 
-    piece_t **pieces = color_to_move == WHITE ? config->white : config->black;
-    piece_t *best_piece = pieces[best_move_piece_index];
-    path_node_set_piece_type(move, piece_get_type(best_piece));
-    position_t *best_position = piece_get_available_position(best_piece, best_move_position_index);
-    path_node_set_to_position(move, best_position);
-    path_node_set_from_position(move, piece_get_current_position(best_piece));
-
-    if (piece_get_type(best_piece) != NONE && position_get_x(best_position) != -1) {
-        config_execute_move(config, move);
-    }
-
-    score_t result;
-    result.min = min_score;
-    result.max = max_score;
-
     path_node_dtor(move);
     free(move);
 
     config_dtor(tmp_conf);
     free(tmp_conf);
-
-    return result;
 }
 
 int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
@@ -312,7 +289,7 @@ int config_execute_move(config_t *conf, path_node_t *move) {
     position_t *to = path_node_get_to_position(move);
     if (from != NULL && to != NULL) {
         piece_t *piece = config_get_piece(conf, piece_get_color(path_node_get_piece_type(move)), path_node_get_from_position(move));
-        if(config_valid_move(conf, piece, position_get_x(to), position_get_y(to))) {
+        if (config_valid_move(conf, piece, position_get_x(to), position_get_y(to))) {
             conf->board[position_get_x(from)][position_get_y(from)] = NONE;
 
             int xto = position_get_x(to);
@@ -388,7 +365,7 @@ void config_calculate_move(config_t *conf, path_node_t *calculated_move) {
 
     for (int i = 0; i < DEPTH; i++) {
         piece_color_t turn_color = i % 2 == 0 ? BLACK : WHITE;
-        __execute_best_move(tmp_conf, turn_color, best_path, current_path, i);
+        __execute_all_moves(tmp_conf, turn_color, best_path, current_path, i);
     }
 
     path_node_t *node_to_play = best_path[0];

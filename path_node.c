@@ -41,11 +41,11 @@ void path_node_print(path_node_t **path, int size) {
     for (int i = 0; i < size; i++) {
         path_node_t *node = path[i];
         if (node->piece_type != NONE) {
-            printf("(%c:%c%d=%d) -> ", piece_tpye_to_char(node->piece_type), position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
+            printf("(%c_%c:%c%d=%d) -> ", piece_tpye_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B', position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
                    node->score);
         }
     }
-    printf("X\n");
+    printf("<END>\n");
 }
 
 void path_node_set_score(path_node_t *node, int score) {
