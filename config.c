@@ -15,6 +15,8 @@ int __is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg
 
 int __is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
 
+int __is_providing_check(config_t *, int xto, int yto);
+
 void __config_add_piece(config_t *, piece_type_t, int x, int y, piece_color_t, int index);
 
 void __determine_available_positions(piece_t *, config_t *);
@@ -41,10 +43,15 @@ void config_ctor(config_t *config) {
         piece_ctor(config->black[i]);
     }
 
+    config->check = 0;
+
     __config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
     __config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
+    __config_add_piece(config, KING_W, 4, 7, WHITE, 2);
+    __config_add_piece(config, BISHOP_W, 5, 7, WHITE, 0);
     __config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
     __config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
+    __config_add_piece(config, KING_B, 4, 0, BLACK, 2);
 
     config_update_available_positions(config);
 }
@@ -74,6 +81,9 @@ void config_update_available_positions(config_t *conf) {
             __determine_available_positions(conf->white[i], conf);
         if (piece_get_type(conf->black[i]) != NONE)
             __determine_available_positions(conf->black[i], conf);
+    }
+    if(conf->check) {
+        printf("check!\n");
     }
 }
 
@@ -105,13 +115,17 @@ void __determine_available_positions(piece_t *piece, config_t *conf) {
 }
 
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth) {
+    // depth barrier
     if (current_depth == DEPTH) {
         path_node_print(current_path, DEPTH);
-        if(path_node_cmpr(current_path, best_path, DEPTH)) {
+        if (path_node_cmpr(current_path, best_path, DEPTH)) {
             path_node_cpy(current_path, best_path, DEPTH);
         }
         return;
     }
+    // game ending barrier
+
+    //
     config_t *tmp_conf = config_new();
     config_copy(config, tmp_conf);
     path_node_t *move = path_node_new();
@@ -152,6 +166,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_nod
 }
 
 int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
+    int result = 0;
     piece_type_t piece_at_from_position = piece_get_type(piece);
     position_t *from_position = piece_get_current_position(piece);
     int xfrom = position_get_x(from_position);
@@ -167,21 +182,34 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     }
 
     if (piece_at_from_position == PAWN_W || piece_at_from_position == PAWN_B) {
-        return __is_valid_pawn_move(xmove, ymove, yfrom, yto, piece_at_from_position, piece_at_to_position);
+        result = __is_valid_pawn_move(xmove, ymove, yfrom, yto, piece_at_from_position, piece_at_to_position);
     } else if (piece_at_from_position == KNIGHT_W || piece_at_from_position == KNIGHT_B) {
-        return __is_valid_knight_move(xfrom, yfrom, xto, yto);
+        result = __is_valid_knight_move(xfrom, yfrom, xto, yto);
     } else if (piece_at_from_position == BISHOP_W || piece_at_from_position == BISHOP_B) {
-        return __is_valid_bishop_move(xfrom, yfrom, xto, yto, conf);
+        result = __is_valid_bishop_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece_at_from_position == ROOK_W || piece_at_from_position == ROOK_B) {
-        return __is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
+        result = __is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece_at_from_position == KING_W || piece_at_from_position == KING_B) {
-        if (xmove > 1 || ymove > 1)
-            return 0;
-        return 1;
+        if (xmove > 1 || ymove > 1) {
+            result = 0;
+        } else {
+            result = 1;
+        }
     } else if (piece_at_from_position == QUEEN_W || piece_at_from_position == QUEEN_B) {
-        return __is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
+        result = __is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
     }
-    return 0;
+
+    if (result && __is_providing_check(conf, xto, yto)) {
+        conf->check = 1;
+    }
+
+    return result;
+}
+
+int __is_providing_check(config_t *config, int xto, int yto) {
+    piece_type_t type = config->board[xto][yto];
+
+    return type == KING_W || type == KING_B;
 }
 
 int __is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t piece, piece_type_t piece_at_to_position) {
