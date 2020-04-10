@@ -43,7 +43,7 @@ void config_ctor(config_t *config) {
         piece_ctor(config->black[i]);
     }
 
-    config->check = 0;
+    config->check_white = 0;
 
     __config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
     __config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
@@ -82,7 +82,7 @@ void config_update_available_positions(config_t *conf) {
         if (piece_get_type(conf->black[i]) != NONE)
             __determine_available_positions(conf->black[i], conf);
     }
-    if(conf->check) {
+    if (conf->check_white) {
         printf("check!\n");
     }
 }
@@ -200,7 +200,11 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     }
 
     if (result && __is_providing_check(conf, xto, yto)) {
-        conf->check = 1;
+        if (piece_at_to_position == KING_B) {
+            conf->check_black = 1;
+        } else {
+            conf->check_white = 1;
+        }
     }
 
     return result;
@@ -304,8 +308,18 @@ int __abs(int x) {
 int config_execute_move(config_t *conf, path_node_t *move) {
     position_t *from = path_node_get_from_position(move);
     position_t *to = path_node_get_to_position(move);
+
+    config_t *backup_config = config_new();
+    config_ctor(backup_config);
+    config_copy(conf, backup_config);
+
+    int move_executed = 0;
+    conf->check_white = 0;
+    conf->check_black = 0;
+
     if (from != NULL && to != NULL) {
-        piece_t *piece = config_get_piece(conf, piece_get_color(path_node_get_piece_type(move)), path_node_get_from_position(move));
+        piece_color_t move_color = piece_get_color(path_node_get_piece_type(move));
+        piece_t *piece = config_get_piece(conf, move_color, path_node_get_from_position(move));
         if (config_valid_move(conf, piece, position_get_x(to), position_get_y(to))) {
             conf->board[position_get_x(from)][position_get_y(from)] = NONE;
 
@@ -320,10 +334,27 @@ int config_execute_move(config_t *conf, path_node_t *move) {
 
             config_update_available_positions(conf);
 
-            return config_eval(conf, BLACK);
+            int revert_move = 0;
+            if (move_color == BLACK && conf->check_black) {
+                revert_move = 1;
+            }
+            if (move_color == WHITE && conf->check_white) {
+                revert_move = 1;
+            }
+            if (revert_move) {
+                //revert
+                move_executed = 0;
+                config_copy(backup_config, conf);
+            } else {
+                move_executed = 1;
+            }
         }
     }
-    return -9999;
+
+    config_dtor(backup_config);
+    free(backup_config);
+
+    return move_executed ? config_eval(conf, BLACK) : -9999;
 }
 
 void config_remove_piece(config_t *cfg, position_t *position) {
@@ -430,6 +461,7 @@ piece_t *config_get_piece(config_t *config, piece_color_t color, position_t *pos
 }
 
 void config_copy(config_t *src, config_t *dst) {
+    dst->check_white = src->check_white;
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
             dst->board[x][y] = src->board[x][y];
