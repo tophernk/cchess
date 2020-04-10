@@ -109,10 +109,11 @@ void __determine_available_positions(piece_t *piece, config_t *conf) {
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth) {
     if (current_depth == DEPTH) {
         path_node_print(current_path, DEPTH);
-        // eval and compare current path to best path
+        if(path_node_cmpr(current_path, best_path, DEPTH)) {
+            path_node_cpy(current_path, best_path, DEPTH);
+        }
         return;
     }
-    int max_score = -9999;
     config_t *tmp_conf = config_new();
     config_copy(config, tmp_conf);
     path_node_t *move = path_node_new();
@@ -136,16 +137,6 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_nod
                     path_node_set_from_position(current_path_node, path_node_get_from_position(move));
                     path_node_set_to_position(current_path_node, path_node_get_to_position(move));
                     path_node_set_score(current_path_node, score);
-
-                    if (score > max_score) {
-                        max_score = score;
-                        path_node_t *best_path_node = best_path[current_depth];
-                        path_node_ctor(best_path_node);
-                        path_node_set_piece_type(best_path_node, piece_get_type(piece_to_move));
-                        path_node_set_from_position(best_path_node, path_node_get_from_position(move));
-                        path_node_set_to_position(best_path_node, path_node_get_to_position(move));
-                        path_node_set_score(best_path_node, score);
-                    }
 
                     __execute_all_moves(tmp_conf, color_to_move == WHITE ? BLACK : WHITE, best_path, current_path, current_depth + 1);
 

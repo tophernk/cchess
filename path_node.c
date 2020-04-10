@@ -9,6 +9,8 @@ struct path_node {
     int score;
 };
 
+int __path_node_eval(path_node_t **, int);
+
 path_node_t *path_node_new() {
     return (path_node_t *) malloc(sizeof(path_node_t));
 }
@@ -41,7 +43,8 @@ void path_node_print(path_node_t **path, int size) {
     for (int i = 0; i < size; i++) {
         path_node_t *node = path[i];
         if (node->piece_type != NONE) {
-            printf("(%c_%c:%c%d=%d) -> ", piece_tpye_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B', position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
+            printf("(%c_%c:%c%d=%d) -> ", piece_tpye_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B',
+                   position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
                    node->score);
         }
     }
@@ -69,5 +72,34 @@ void path_node_set_piece_type(path_node_t *node, piece_type_t type) {
 }
 
 piece_type_t path_node_get_piece_type(path_node_t *node) {
-   return node->piece_type;
+    return node->piece_type;
+}
+
+int path_node_cmpr(path_node_t **a, path_node_t **b, int depth) {
+    int a_eval = __path_node_eval(a, depth);
+    int b_eval = __path_node_eval(b, depth);
+
+   printf("curr (%d) > bst (%d) ? (%d)\n", a_eval, b_eval, a_eval > b_eval);
+
+    return  a_eval > b_eval ;
+}
+
+int __path_node_eval(path_node_t **path, int depth) {
+    int result = 0;
+    for (int i = 0; i < depth; i++) {
+       result += (depth - i) * path_node_get_score(path[i]);
+    }
+    return result;
+}
+
+void path_node_cpy(path_node_t **src, path_node_t **dst, int depth) {
+    for(int i = 0; i < depth; i++) {
+       path_node_t *src_node = src[i];
+       path_node_t *dst_node = dst[i];
+
+       path_node_set_piece_type(dst_node, path_node_get_piece_type(src_node));
+       path_node_set_score(dst_node, path_node_get_score(src_node));
+       path_node_set_from_position(dst_node, path_node_get_from_position(src_node));
+       path_node_set_to_position(dst_node, path_node_get_to_position(src_node));
+    }
 }
