@@ -72,8 +72,6 @@ void config_update_available_positions(config_t *conf) {
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         if (piece_get_type(conf->white[i]) != NONE)
             __determine_available_positions(conf->white[i], conf);
-    }
-    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         if (piece_get_type(conf->black[i]) != NONE)
             __determine_available_positions(conf->black[i], conf);
     }
@@ -163,7 +161,7 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
 
     piece_type_t piece_at_to_position = conf->board[xto][yto];
     if (piece_at_to_position != NONE) {
-        if (piece_get_color(piece_at_from_position) && piece_get_color(piece_at_to_position)) {
+        if (piece_get_color(piece_at_from_position) == piece_get_color(piece_at_to_position)) {
             return 0;
         }
     }
