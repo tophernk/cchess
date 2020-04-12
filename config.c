@@ -48,7 +48,7 @@ void config_ctor(config_t *config) {
     __config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
     __config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
     __config_add_piece(config, KING_W, 4, 7, WHITE, 2);
-    __config_add_piece(config, BISHOP_W, 5, 7, WHITE, 0);
+    __config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
     __config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
     __config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
     __config_add_piece(config, KING_B, 4, 0, BLACK, 2);
