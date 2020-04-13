@@ -1,11 +1,10 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "../position.h"
+#include "position.h"
 
 static void test_position_ctor(void **state) {
     position_t *position = position_new();
