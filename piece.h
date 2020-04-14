@@ -42,7 +42,7 @@ piece_type_t piece_get_type(piece_t *);
 
 void piece_set_type(piece_t *, piece_type_t);
 
-char piece_tpye_to_char(piece_type_t piece);
+char piece_type_to_char(piece_type_t piece);
 
 void piece_invalidate_available_positions(piece_t *);
 

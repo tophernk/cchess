@@ -52,7 +52,7 @@ piece_type_t piece_get_type(piece_t *piece) {
     return piece->type;
 }
 
-char piece_tpye_to_char(piece_type_t piece) {
+char piece_type_to_char(piece_type_t piece) {
     switch (piece) {
         case PAWN_W:
         case PAWN_B:
