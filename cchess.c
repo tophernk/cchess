@@ -3,11 +3,24 @@
 #include "cchess.h"
 #include "config.h"
 
+void cchess_init(config_t *config) {
+    config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
+    config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
+    config_add_piece(config, KING_W, 4, 7, WHITE, 2);
+    config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
+    config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
+    config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
+    config_add_piece(config, KING_B, 4, 0, BLACK, 2);
+
+    config_update_available_positions(config);
+}
+
 int main() {
     srand(0);
 
     config_t *config = config_new();
     config_ctor(config);
+    cchess_init(config);
     config_print(config);
 
     position_t *from = position_new();

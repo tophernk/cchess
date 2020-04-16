@@ -6,4 +6,8 @@
 #define DEPTH 3
 #define FILE_OFFSET 'a'
 
+#include "config.h"
+
+void cchess_init(config_t *config);
+
 #endif //CCHESS_CCHESS_H
