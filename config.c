@@ -17,8 +17,6 @@ int __is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg)
 
 int __is_providing_check(config_t *, int xto, int yto);
 
-void __config_add_piece(config_t *, piece_type_t, int x, int y, piece_color_t, int index);
-
 void __determine_available_positions(piece_t *, config_t *);
 
 int __abs(int);
@@ -45,13 +43,13 @@ void config_ctor(config_t *config) {
 
     config->check_white = 0;
 
-    __config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
-    __config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
-    __config_add_piece(config, KING_W, 4, 7, WHITE, 2);
-    __config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
-    __config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
-    __config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
-    __config_add_piece(config, KING_B, 4, 0, BLACK, 2);
+    config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
+    config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
+    config_add_piece(config, KING_W, 4, 7, WHITE, 2);
+    config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
+    config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
+    config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
+    config_add_piece(config, KING_B, 4, 0, BLACK, 2);
 
     config_update_available_positions(config);
 }
@@ -66,7 +64,7 @@ void config_dtor(config_t *config) {
     }
 }
 
-void __config_add_piece(config_t *config, piece_type_t type, int x, int y, piece_color_t color, int index) {
+void config_add_piece(config_t *config, piece_type_t type, int x, int y, piece_color_t color, int index) {
     config->board[x][y] = type;
 
     piece_t *piece = color == BLACK ? config->black[index] : config->white[index];
