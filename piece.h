@@ -42,7 +42,9 @@ piece_type_t piece_get_type(piece_t *);
 
 void piece_set_type(piece_t *, piece_type_t);
 
-char piece_type_to_char(piece_type_t piece);
+char piece_type_to_char(piece_type_t);
+
+int piece_type_get_weight(piece_type_t);
 
 void piece_invalidate_available_positions(piece_t *);
 

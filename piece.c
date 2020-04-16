@@ -52,6 +52,30 @@ piece_type_t piece_get_type(piece_t *piece) {
     return piece->type;
 }
 
+int piece_type_get_weight(piece_type_t type) {
+    switch (type) {
+        case PAWN_W:
+        case PAWN_B:
+            return 1;
+        case KNIGHT_W:
+        case KNIGHT_B:
+        case BISHOP_W:
+        case BISHOP_B:
+            return 2;
+        case ROOK_W:
+        case ROOK_B:
+            return 5;
+        case QUEEN_W:
+        case QUEEN_B:
+            return 9;
+        case KING_W:
+        case KING_B:
+            return 20;
+        default:
+            return -1;
+    }
+}
+
 char piece_type_to_char(piece_type_t piece) {
     switch (piece) {
         case PAWN_W:
@@ -109,7 +133,7 @@ void piece_copy(piece_t *src, piece_t *dst) {
     dst->type = src->type;
     dst->current_position = position_new();
     position_copy(src->current_position, dst->current_position);
-    for(int i = 0; i < MAX_POSITIONS; i++) {
+    for (int i = 0; i < MAX_POSITIONS; i++) {
         dst->available_positions[i] = position_new();
         position_copy(src->available_positions[i], dst->available_positions[i]);
     }

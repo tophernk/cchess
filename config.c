@@ -80,8 +80,8 @@ int config_eval(config_t *config, piece_color_t color) {
     int white = 0;
     int black = 0;
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        white += piece_get_type(config->white[i]);
-        black += piece_get_type(config->black[i]);
+        white += piece_type_get_weight(piece_get_type(config->white[i]));
+        black += piece_type_get_weight(piece_get_type(config->black[i]));
     }
     return color == BLACK ? black - white : white - black;
 }
