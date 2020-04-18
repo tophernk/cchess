@@ -8,6 +8,7 @@
 typedef struct piece piece_t;
 
 typedef enum {
+    EN_PASSANT,
     NONE,
     PAWN_W,
     KNIGHT_W,

@@ -23,6 +23,8 @@ int __abs(int);
 
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth);
 
+void __clear_en_passant_flag(config_t *);
+
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
 }
@@ -65,9 +67,9 @@ void config_add_piece(config_t *config, piece_type_t type, int x, int y, piece_c
 
 void config_update_available_positions(config_t *conf) {
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        if (piece_get_type(conf->white[i]) != NONE)
+        if (piece_get_type(conf->white[i]) > NONE)
             __determine_available_positions(conf->white[i], conf);
-        if (piece_get_type(conf->black[i]) != NONE)
+        if (piece_get_type(conf->black[i]) > NONE)
             __determine_available_positions(conf->black[i], conf);
     }
     if (conf->check_white) {
@@ -121,7 +123,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_nod
 
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         piece_t **pieces = color_to_move == WHITE ? tmp_conf->white : tmp_conf->black;
-        if (piece_get_type(pieces[i]) != NONE) {
+        if (piece_get_type(pieces[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
                 piece_t *piece_to_move = color_to_move == WHITE ? tmp_conf->white[i] : tmp_conf->black[i];
                 position_t *available_position = piece_get_available_position(piece_to_move, x);
@@ -163,7 +165,7 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     int ymove = abs(yfrom - yto);
 
     piece_type_t piece_at_to_position = conf->board[xto][yto];
-    if (piece_at_to_position != NONE) {
+    if (piece_at_to_position > NONE) {
         if (piece_get_color(piece_at_from_position) == piece_get_color(piece_at_to_position)) {
             return 0;
         }
@@ -218,10 +220,10 @@ int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *confi
         if (yfrom != pawn_start_y) {
             return 0;
         }
-        if (config->board[xfrom][yfrom + y_direction] != NONE) {
+        if (config->board[xfrom][yfrom + y_direction] > NONE) {
             return 0;
         }
-        return 1;
+        return 2;
     }
     if (xmove > 1) {
         return 0;
@@ -229,7 +231,7 @@ int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *confi
     if (xmove == 1 && piece_at_to_position == NONE) {
         return 0;
     }
-    if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
+    if (ymove == 1 && xmove == 0 && piece_at_to_position > NONE) {
         return 0;
     }
     if (piece_at_from_position == PAWN_W && yfrom - yto != 1) {
@@ -263,7 +265,7 @@ int __is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg
         int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
         int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
         while (y != yto) {
-            if (cfg->board[x][y] != NONE) {
+            if (cfg->board[x][y] > NONE) {
                 return 0;
             }
             ymove > 0 ? y-- : y++;
@@ -281,7 +283,7 @@ int __is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) 
     if (xmove == 0) {
         int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
         while (y != yto) {
-            if (cfg->board[xto][y] != NONE) {
+            if (cfg->board[xto][y] > NONE) {
                 return 0;
             }
             ymove > 0 ? y-- : y++;
@@ -291,7 +293,7 @@ int __is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) 
     if (ymove == 0) {
         int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
         while (x != xto) {
-            if (cfg->board[x][yto] != NONE) {
+            if (cfg->board[x][yto] > NONE) {
                 return 0;
             }
             xmove > 0 ? x-- : x++;
@@ -326,13 +328,27 @@ int config_execute_move(config_t *conf, path_node_t *move) {
     if (from != NULL && to != NULL) {
         piece_color_t move_color = piece_get_color(path_node_get_piece_type(move));
         piece_t *piece = config_get_piece(conf, move_color, path_node_get_from_position(move));
-        if (config_valid_move(conf, piece, position_get_x(to), position_get_y(to))) {
+        int valid_move = config_valid_move(conf, piece, position_get_x(to), position_get_y(to));
+        if (valid_move) {
             conf->board[position_get_x(from)][position_get_y(from)] = NONE;
 
             int xto = position_get_x(to);
             int yto = position_get_y(to);
-            if (conf->board[xto][yto] != NONE) {
+            if (conf->board[xto][yto] > NONE) {
                 config_remove_piece(conf, to);
+            } else if (conf->board[xto][yto] == EN_PASSANT) {
+                int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
+                position_t *en_passant_piece_position = position_new();
+                position_set_x(en_passant_piece_position, xto);
+                position_set_y(en_passant_piece_position, en_passant_piece_rank);
+                config_remove_piece(conf, en_passant_piece_position);
+                conf->board[xto][en_passant_piece_rank] = NONE;
+            }
+            if (valid_move == 2) {
+                int en_passant_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 5 : 2;
+                conf->board[xto][en_passant_rank] = EN_PASSANT;
+            } else {
+                __clear_en_passant_flag(conf);
             }
 
             piece_set_current_position(piece, xto, yto);
@@ -363,6 +379,17 @@ int config_execute_move(config_t *conf, path_node_t *move) {
     return move_executed ? config_eval(conf, BLACK) : -9999;
 }
 
+void __clear_en_passant_flag(config_t *config) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        if (config->board[x][5] == EN_PASSANT) {
+            config->board[x][5] = NONE;
+        }
+        if (config->board[x][2] == EN_PASSANT) {
+            config->board[x][2] = NONE;
+        }
+    }
+}
+
 void config_remove_piece(config_t *cfg, position_t *position) {
     int x = position_get_x(position);
     int y = position_get_y(position);
@@ -391,7 +418,7 @@ int config_move_cpu(config_t *conf) {
     path_node_ctor(next_move);
     config_calculate_move(conf, next_move);
 
-    if (path_node_get_piece_type(next_move) != NONE && position_valid(path_node_get_to_position(next_move))) {
+    if (path_node_get_piece_type(next_move) > NONE && position_valid(path_node_get_to_position(next_move))) {
         piece_moved = config_execute_move(conf, next_move);
     }
     config_print(conf);
@@ -445,7 +472,7 @@ void config_calculate_move(config_t *conf, path_node_t *calculated_move) {
 int config_move_available(config_t *config, piece_color_t color) {
     piece_t **piece = color == WHITE ? config->white : config->black;
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        if (piece_get_type(piece[i]) != NONE) {
+        if (piece_get_type(piece[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
                 if (position_valid(piece_get_available_position(piece[i], x))) {
                     return 1;

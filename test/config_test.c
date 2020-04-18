@@ -92,6 +92,18 @@ static void test_config_valid_move_en_passant(void **state) {
 
     piece_t *piece = config_get_piece(config, BLACK, black_position);
     assert_true(config_valid_move(config, piece, 0, 5));
+
+    position_t *en_passant_position = position_new();
+    position_set_x(en_passant_position, 0);
+    position_set_y(en_passant_position, 5);
+
+    path_node_set_from_position(move, black_position);
+    path_node_set_to_position(move, en_passant_position);
+    path_node_set_piece_type(move, PAWN_B);
+    config_execute_move(config, move);
+
+    piece = config_get_piece(config, WHITE, to_position);
+    assert_null(piece);
 }
 
 int main(void) {
