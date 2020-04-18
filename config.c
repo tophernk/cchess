@@ -5,7 +5,7 @@
 #include "config_p.h"
 #include "path_node.h"
 
-int __is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t piece, piece_type_t piece_at_to_position);
+int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
 
 int __is_valid_knight_move(int xfrom, int yfrom, int xto, int yto);
 
@@ -170,7 +170,7 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     }
 
     if (piece_at_from_position == PAWN_W || piece_at_from_position == PAWN_B) {
-        result = __is_valid_pawn_move(xmove, ymove, yfrom, yto, piece_at_from_position, piece_at_to_position);
+        result = __is_valid_pawn_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece_at_from_position == KNIGHT_W || piece_at_from_position == KNIGHT_B) {
         result = __is_valid_knight_move(xfrom, yfrom, xto, yto);
     } else if (piece_at_from_position == BISHOP_W || piece_at_from_position == BISHOP_B) {
@@ -204,7 +204,25 @@ int __is_providing_check(config_t *config, int xto, int yto) {
     return type == KING_W || type == KING_B;
 }
 
-int __is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t piece, piece_type_t piece_at_to_position) {
+
+int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *config) {
+    int xmove = abs(xfrom - xto);
+    int ymove = abs(yfrom - yto);
+    piece_type_t piece_at_to_position = config->board[xto][yto];
+    piece_type_t piece_at_from_position = config->board[xfrom][yfrom];
+
+    if (ymove == 2) {
+        piece_color_t piece_color = piece_get_color(piece_at_from_position);
+        int pawn_start_y = piece_color == WHITE ? 6 : 1;
+        int y_direction = piece_color == WHITE ? -1 : 1;
+        if (yfrom != pawn_start_y) {
+            return 0;
+        }
+        if (config->board[xfrom][yfrom + y_direction] != NONE) {
+            return 0;
+        }
+        return 1;
+    }
     if (xmove > 1) {
         return 0;
     }
@@ -214,10 +232,10 @@ int __is_valid_pawn_move(int xmove, int ymove, int yfrom, int yto, piece_type_t 
     if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
         return 0;
     }
-    if (piece == PAWN_W && yfrom - yto != 1) {
+    if (piece_at_from_position == PAWN_W && yfrom - yto != 1) {
         return 0;
     }
-    if (piece == PAWN_B && yfrom - yto != -1) {
+    if (piece_at_from_position == PAWN_B && yfrom - yto != -1) {
         return 0;
     }
     return 1;

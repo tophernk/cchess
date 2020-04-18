@@ -41,10 +41,65 @@ static void test_config_eval(void **state) {
     assert_true(config_eval(config, WHITE) < config_eval(config, BLACK));
 }
 
+static void test_config_valid_move_pawn(void **state) {
+    config_t *config = config_new();
+    config_ctor(config);
+
+    config_add_piece(config, PAWN_W, 0, 6, WHITE, 0);
+    config_update_available_positions(config);
+
+    position_t *position = position_new();
+    position_set_x(position, 0);
+    position_set_y(position, 6);
+
+    piece_t *piece = config_get_piece(config, WHITE, position);
+    assert_true(config_valid_move(config, piece, 0, 5));
+    assert_true(config_valid_move(config, piece, 0, 4));
+
+    config_add_piece(config, PAWN_B, 1, 5, BLACK, 0);
+    config_update_available_positions(config);
+
+    assert_true(config_valid_move(config, piece, 1, 5));
+}
+
+static void test_config_valid_move_en_passant(void **state) {
+    config_t *config = config_new();
+    config_ctor(config);
+
+    config_add_piece(config, PAWN_W, 0, 6, WHITE, 0);
+    config_add_piece(config, PAWN_B, 1, 4, BLACK, 0);
+    config_update_available_positions(config);
+
+    position_t *from_position = position_new();
+    position_set_x(from_position, 0);
+    position_set_y(from_position, 6);
+
+    position_t *to_position = position_new();
+    position_set_x(to_position, 0);
+    position_set_y(to_position, 4);
+
+    path_node_t *move = path_node_new();
+    path_node_ctor(move);
+    path_node_set_from_position(move, from_position);
+    path_node_set_to_position(move, to_position);
+    path_node_set_piece_type(move, PAWN_W);
+
+    config_execute_move(config, move);
+
+    position_t *black_position = position_new();
+    position_set_x(black_position, 1);
+    position_set_y(black_position, 4);
+
+    piece_t *piece = config_get_piece(config, BLACK, black_position);
+    assert_true(config_valid_move(config, piece, 0, 5));
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
-            cmocka_unit_test(test_config_eval)
+            cmocka_unit_test(test_config_eval),
+            cmocka_unit_test(test_config_valid_move_pawn),
+            cmocka_unit_test(test_config_valid_move_en_passant)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
