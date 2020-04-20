@@ -3,7 +3,7 @@ pipeline {
    stages {
         stage('Checkout') {
             steps {
-                // Get some code from a GitHub repository
+                // Get code from GitHub repository
                 git 'https://github.com/tophernk/cchess.git'
             }
         }
@@ -18,7 +18,7 @@ pipeline {
         stage('TEST') {
             steps {
                 // RUN TESTS
-                sh "ctest"
+                sh "ctest -VV"
             }
         }
     }
