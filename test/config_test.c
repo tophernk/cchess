@@ -106,12 +106,31 @@ static void test_config_valid_move_en_passant(void **state) {
     assert_null(piece);
 }
 
+void test_config_cpu_move(void **state) {
+    config_t *config = config_new();
+    config_ctor(config);
+
+    config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
+    config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
+    config_add_piece(config, KING_W, 4, 7, WHITE, 2);
+    config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
+    config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
+    config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
+    config_add_piece(config, KING_B, 4, 0, BLACK, 2);
+
+    config_update_available_positions(config);
+
+    config_move_cpu(config);
+    assert_true(1);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
             cmocka_unit_test(test_config_eval),
             cmocka_unit_test(test_config_valid_move_pawn),
-            cmocka_unit_test(test_config_valid_move_en_passant)
+            cmocka_unit_test(test_config_valid_move_en_passant),
+            cmocka_unit_test(test_config_cpu_move)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
