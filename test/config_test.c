@@ -78,11 +78,11 @@ static void test_config_valid_move_en_passant(void **state) {
     position_set_x(to_position, 0);
     position_set_y(to_position, 4);
 
-    path_node_t *move = path_node_new();
-    path_node_ctor(move);
-    path_node_set_from_position(move, from_position);
-    path_node_set_to_position(move, to_position);
-    path_node_set_piece_type(move, PAWN_W);
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_from_position(move, from_position);
+    move_set_to_position(move, to_position);
+    move_set_piece_type(move, PAWN_W);
 
     config_execute_move(config, move);
 
@@ -97,9 +97,9 @@ static void test_config_valid_move_en_passant(void **state) {
     position_set_x(en_passant_position, 0);
     position_set_y(en_passant_position, 5);
 
-    path_node_set_from_position(move, black_position);
-    path_node_set_to_position(move, en_passant_position);
-    path_node_set_piece_type(move, PAWN_B);
+    move_set_from_position(move, black_position);
+    move_set_to_position(move, en_passant_position);
+    move_set_piece_type(move, PAWN_B);
     config_execute_move(config, move);
 
     piece = config_get_piece(config, WHITE, to_position);

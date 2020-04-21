@@ -2,7 +2,7 @@
 #define CCHESS_CONFIG_H
 
 #include "piece.h"
-#include "path_node.h"
+#include "move.h"
 
 typedef struct config config_t;
 
@@ -24,11 +24,11 @@ void config_add_piece(config_t *, piece_type_t, int x, int y, piece_color_t, int
 
 void config_remove_piece(config_t *cfg, position_t *);
 
-int config_execute_move(config_t *, path_node_t *);
+int config_execute_move(config_t *, move_t *);
 
 int config_move_cpu(config_t *);
 
-void config_calculate_move(config_t *, path_node_t *);
+void config_calculate_move(config_t *, move_t *);
 
 int config_valid_move(config_t *, piece_t *, int xto, int yto);
 
