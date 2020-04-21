@@ -9,10 +9,8 @@ pipeline {
         }
         stage('MAKE') {
             steps {
-                sh "mkdir -p build"
-                sh "cd build"
                 // Run CMAKE
-                sh "cmake .."
+                sh "cmake -j 4 ."
                 // RUN MAKE
                 sh "make"
             }
