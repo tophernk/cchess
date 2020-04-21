@@ -120,8 +120,8 @@ void test_config_cpu_move(void **state) {
 
     config_update_available_positions(config);
 
-    config_move_cpu(config);
-    assert_true(1);
+    int piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
 }
 
 int main(void) {

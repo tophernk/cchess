@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "config.h"
 #include "cchess.h"
 #include "config_p.h"
@@ -24,6 +25,8 @@ int __abs(int);
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, path_node_t **best_path, path_node_t **current_path, int current_depth);
 
 void __clear_en_passant_flag(config_t *);
+
+bool __is_pawn(piece_t *piece);
 
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
@@ -336,7 +339,7 @@ int config_execute_move(config_t *conf, path_node_t *move) {
             int yto = position_get_y(to);
             if (conf->board[xto][yto] > NONE) {
                 config_remove_piece(conf, to);
-            } else if (conf->board[xto][yto] == EN_PASSANT) {
+            } else if (conf->board[xto][yto] == EN_PASSANT && __is_pawn(piece)) {
                 int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
                 position_t *en_passant_piece_position = position_new();
                 position_set_x(en_passant_piece_position, xto);
@@ -377,6 +380,11 @@ int config_execute_move(config_t *conf, path_node_t *move) {
     free(backup_config);
 
     return move_executed ? config_eval(conf, BLACK) : -9999;
+}
+
+bool __is_pawn(piece_t *piece) {
+    piece_type_t type = piece_get_type(piece);
+    return type == PAWN_B || type == PAWN_W;
 }
 
 void __clear_en_passant_flag(config_t *config) {
