@@ -10,7 +10,7 @@ pipeline {
         stage('MAKE') {
             steps {
                 // Run CMAKE
-                sh "cmake -j 4 ."
+                sh "cmake -DGCC=ON -DCLANG=OFF -j 4 ."
                 // RUN MAKE
                 sh "make"
             }

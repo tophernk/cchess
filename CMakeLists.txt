@@ -3,8 +3,18 @@ project(cchess C)
 enable_testing()
 set(CMAKE_C_STANDARD 11)
 
-add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
-add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+option(CLANG "clang compiler" ON)
+option(GCC "gcc compiler" OFF)
+
+if (CLANG)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+endif (CLANG)
+
+if (GCC)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+endif (GCC)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
