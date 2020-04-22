@@ -78,7 +78,7 @@ static void test_piece_invalidate_available_positions(void **state) {
         assert_false(position_valid(piece_get_available_position(piece, i)));
     }
 
-    position_dtor(piece);
+    piece_dtor(piece);
     free(piece);
 }
 
