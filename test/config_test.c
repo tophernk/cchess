@@ -26,6 +26,9 @@ static void test_config_add_piece(void **state) {
     assert_int_equal(piece_get_type(piece), PAWN_W);
     assert_true(position_equal(piece_get_current_position(piece), position));
 
+    position_dtor(position);
+    free(position);
+
     config_dtor(config);
     free(config);
 }
@@ -66,6 +69,9 @@ static void test_config_valid_move_pawn(void **state) {
     config_update_available_positions(config);
 
     assert_true(config_valid_move(config, piece, 1, 5));
+
+    position_dtor(position);
+    free(position);
 
     config_dtor(config);
     free(config);
