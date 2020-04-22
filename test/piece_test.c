@@ -39,6 +39,11 @@ static void test_piece_copy(void **state) {
     assert_int_equal(piece_get_type(piece), piece_get_type(copy));
     assert_true(position_equal(piece_get_current_position(piece), piece_get_current_position(copy)));
     assert_true(position_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2)));
+
+    position_dtor(piece);
+    free(piece);
+    position_dtor(copy);
+    free(copy);
 }
 
 static void test_piece_get_color(void **state) {
@@ -72,6 +77,9 @@ static void test_piece_invalidate_available_positions(void **state) {
     for (int i = 0; i < MAX_POSITIONS; i++) {
         assert_false(position_valid(piece_get_available_position(piece, i)));
     }
+
+    position_dtor(piece);
+    free(piece);
 }
 
 int main(void) {

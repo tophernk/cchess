@@ -9,6 +9,7 @@ option(GCC "gcc compiler" OFF)
 if (CLANG)
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -Wall -Wextra")
 endif (CLANG)
 
 if (GCC)
