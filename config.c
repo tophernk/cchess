@@ -120,6 +120,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
 
     //
     config_t *tmp_conf = config_new();
+    config_ctor(tmp_conf);
     config_copy(config, tmp_conf);
     move_t *move = move_new();
     move_ctor(move);
@@ -439,6 +440,7 @@ int config_move_cpu(config_t *conf) {
 
 void config_calculate_move(config_t *conf, move_t *calculated_move) {
     config_t *tmp_conf = config_new();
+    config_ctor(tmp_conf);
     config_copy(conf, tmp_conf);
 
     move_t *best_path[DEPTH];
@@ -509,9 +511,7 @@ void config_copy(config_t *src, config_t *dst) {
         }
 
         for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-            dst->white[i] = piece_new();
             piece_copy(src->white[i], dst->white[i]);
-            dst->black[i] = piece_new();
             piece_copy(src->black[i], dst->black[i]);
         }
     }

@@ -122,6 +122,23 @@ void test_config_cpu_move(void **state) {
 
     int piece_moved = config_move_cpu(config);
     assert_true(piece_moved);
+
+    config_dtor(config);
+    free(config);
+}
+
+static void test_config_copy(void **state) {
+    config_t *config = config_new();
+    config_ctor(config);
+    config_t *copy = config_new();
+    config_ctor(copy);
+
+    config_copy(config, copy);
+
+    config_dtor(copy);
+    free(copy);
+    config_dtor(config);
+    free(config);
 }
 
 int main(void) {
@@ -129,6 +146,7 @@ int main(void) {
             cmocka_unit_test(test_config_add_piece),
             cmocka_unit_test(test_config_eval),
             cmocka_unit_test(test_config_valid_move_pawn),
+            cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_valid_move_en_passant),
             cmocka_unit_test(test_config_cpu_move)
     };
