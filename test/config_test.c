@@ -25,6 +25,9 @@ static void test_config_add_piece(void **state) {
     assert_non_null(piece);
     assert_int_equal(piece_get_type(piece), PAWN_W);
     assert_true(position_equal(piece_get_current_position(piece), position));
+
+    config_dtor(config);
+    free(config);
 }
 
 static void test_config_eval(void **state) {
@@ -39,6 +42,9 @@ static void test_config_eval(void **state) {
 
     config_add_piece(config, PAWN_B, 1, 6, BLACK, 1);
     assert_true(config_eval(config, WHITE) < config_eval(config, BLACK));
+
+    config_dtor(config);
+    free(config);
 }
 
 static void test_config_valid_move_pawn(void **state) {
@@ -60,6 +66,9 @@ static void test_config_valid_move_pawn(void **state) {
     config_update_available_positions(config);
 
     assert_true(config_valid_move(config, piece, 1, 5));
+
+    config_dtor(config);
+    free(config);
 }
 
 static void test_config_valid_move_en_passant(void **state) {
@@ -104,6 +113,21 @@ static void test_config_valid_move_en_passant(void **state) {
 
     piece = config_get_piece(config, WHITE, to_position);
     assert_null(piece);
+
+    position_dtor(from_position);
+    position_dtor(to_position);
+    position_dtor(black_position);
+    position_dtor(en_passant_position);
+    free(from_position);
+    free(to_position);
+    free(black_position);
+    free(en_passant_position);
+
+    move_dtor(move);
+    free(move);
+
+    config_dtor(config);
+    free(config);
 }
 
 void test_config_cpu_move(void **state) {
