@@ -138,7 +138,6 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                     int score = config_execute_move(tmp_conf, move);
 
                     move_t *current_path_node = current_path[current_depth];
-                    move_ctor(current_path_node);
                     move_set_piece_type(current_path_node, piece_get_type(piece_to_move));
                     move_set_from_position(current_path_node, move_get_from_position(move));
                     move_set_to_position(current_path_node, move_get_to_position(move));
@@ -479,6 +478,7 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
         move_dtor(current_path[i]);
         free(current_path[i]);
     }
+
     config_dtor(tmp_conf);
     free(tmp_conf);
 }
