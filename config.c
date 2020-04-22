@@ -479,6 +479,8 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
         move_dtor(current_path[i]);
         free(current_path[i]);
     }
+    config_dtor(tmp_conf);
+    free(tmp_conf);
 }
 
 int config_move_available(config_t *config, piece_color_t color) {
