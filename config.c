@@ -347,6 +347,8 @@ int config_execute_move(config_t *conf, move_t *move) {
                 position_set_y(en_passant_piece_position, en_passant_piece_rank);
                 config_remove_piece(conf, en_passant_piece_position);
                 conf->board[xto][en_passant_piece_rank] = NONE;
+                position_dtor(en_passant_piece_position);
+                free(en_passant_piece_position);
             }
             if (valid_move == 2) {
                 int en_passant_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 5 : 2;
