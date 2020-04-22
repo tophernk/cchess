@@ -3,7 +3,7 @@
 
 #define BOARD_SIZE 8
 #define NUMBER_OF_PIECES 16
-#define DEPTH 2
+#define DEPTH 3
 #define FILE_OFFSET 'a'
 
 #include "config.h"
