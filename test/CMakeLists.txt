@@ -9,6 +9,10 @@ add_executable(piece_test piece_test.c)
 add_test(piece_test piece_test)
 target_link_libraries(piece_test position piece ${CMOCKA})
 
+add_executable(move_test move_test.c)
+add_test(move_test move_test)
+target_link_libraries(move_test position piece move ${CMOCKA})
+
 add_executable(config_test config_test.c)
 add_test(config_test config_test)
 target_link_libraries(config_test position piece config ${CMOCKA})
