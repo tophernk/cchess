@@ -20,7 +20,6 @@ endif (GCC)
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(test)
-add_library(cchesslogger logger.c)
-add_library(lcchess position.c piece.c move.c config.c print.c)
+add_library(lcchess logger.c position.c piece.c move.c config.c print.c)
 
-add_executable(cchess cchess.c position.c print.c config.c piece.c move.c)
+add_executable(cchess cchess.c position.c print.c config.c piece.c move.c logger.c)

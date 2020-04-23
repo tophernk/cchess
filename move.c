@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "move.h"
+#include "logger.h"
 
 struct move {
     piece_type_t piece_type;
@@ -43,12 +44,12 @@ void move_print(move_t **path, int size) {
     for (int i = 0; i < size; i++) {
         move_t *node = path[i];
         if (node->piece_type > NONE) {
-            printf("(%c_%c:%c%d=%d) -> ", piece_type_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B',
+            cchess_log("(%c_%c:%c%d=%d) -> ", piece_type_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B',
                    position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
                    node->score);
         }
     }
-    printf("<END>\n");
+    cchess_log("<END>\n");
 }
 
 void move_set_score(move_t *move, int score) {
@@ -79,7 +80,7 @@ int move_cmpr(move_t **a, move_t **b, int depth) {
     int a_eval = __move_eval(a, depth);
     int b_eval = __move_eval(b, depth);
 
-   printf("curr (%d) > bst (%d) ? (%d)\n", a_eval, b_eval, a_eval > b_eval);
+   cchess_log("curr (%d) > bst (%d) ? (%d)\n", a_eval, b_eval, a_eval > b_eval);
 
     return  a_eval > b_eval ;
 }

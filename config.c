@@ -5,6 +5,7 @@
 #include "cchess.h"
 #include "config_p.h"
 #include "move.h"
+#include "logger.h"
 
 int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
 
@@ -467,8 +468,7 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
     move_set_to_position(calculated_move, move_get_to_position(node_to_play));
     move_set_score(calculated_move, move_get_score(node_to_play));
 
-    printf("-----------------\n");
-    printf("best path: ");
+    cchess_log("-----------------\nbest path: ");
     move_print(best_path, DEPTH);
 
     for (int i = 0; i < DEPTH; i++) {

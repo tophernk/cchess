@@ -3,7 +3,7 @@ find_library(CMOCKA cmocka /usr/local/Cellar/cmocka/1.1.5/lib)
 
 add_executable(logger_test logger_test.c)
 add_test(logger_test logger_test)
-target_link_libraries(logger_test cchesslogger ${CMOCKA})
+target_link_libraries(logger_test lcchess ${CMOCKA})
 
 add_executable(position_test position_test.c)
 add_test(position_test position_test)
