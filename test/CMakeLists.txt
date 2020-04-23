@@ -1,6 +1,10 @@
 include_directories(${PROJECT_SOURCE_DIR} /usr/local/Cellar/cmocka/1.1.5/include)
 find_library(CMOCKA cmocka /usr/local/Cellar/cmocka/1.1.5/lib)
 
+add_executable(logger_test logger_test.c)
+add_test(logger_test logger_test)
+target_link_libraries(logger_test cchesslogger ${CMOCKA})
+
 add_executable(position_test position_test.c)
 add_test(position_test position_test)
 target_link_libraries(position_test lcchess ${CMOCKA})
