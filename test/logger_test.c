@@ -9,7 +9,8 @@
 #include "logger.h"
 
 static void test_logger(void **state) {
-    cchess_log("test %d", 123);
+    cchess_log_file("test %d", 123);
+
     FILE *file = fopen(CCHESS_LOG, "rb");
     fseek(file, 0, SEEK_END);
     long f_size = ftell(file);
