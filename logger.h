@@ -2,7 +2,7 @@
 #define CCHESS_LOGGER_H
 
 #define CCHESS_LOG "cchess.log"
-#define CCHESS_LOG_LEVEL 0
+#define CCHESS_LOG_LEVEL -1
 
 typedef enum {
     LOG_FILE,
