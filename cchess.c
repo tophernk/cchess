@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "cchess.h"
 #include "config.h"
+#include "logger.h"
 
 void cchess_init(config_t *config) {
     config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
@@ -17,6 +18,7 @@ void cchess_init(config_t *config) {
 
 int main() {
     srand(0);
+    remove(CCHESS_LOG);
 
     config_t *config = config_new();
     config_ctor(config);

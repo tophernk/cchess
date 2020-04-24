@@ -171,6 +171,52 @@ static void test_config_copy(void **state) {
     free(config);
 }
 
+static void test_config_short_castle(void **state) {
+    config_t *config = config_new();
+    config_ctor(config);
+
+    config_add_piece(config, KING_W, 4, 7, WHITE, 0);
+    config_add_piece(config, ROOK_W, 7, 7, WHITE, 1);
+    config_add_piece(config, PAWN_B, 1, 4, BLACK, 0);
+    config_update_available_positions(config);
+
+    position_t *king_position = position_new();
+    position_set_x(king_position, 4);
+    position_set_y(king_position, 7);
+
+    position_t *castle_position = position_new();
+    position_set_x(castle_position, 6);
+    position_set_y(castle_position, 7);
+
+    piece_t *piece = config_get_piece(config, WHITE, king_position);
+    assert_true(config_valid_move(config, piece, 6, 7));
+
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_from_position(move, king_position);
+    move_set_to_position(move, castle_position);
+    move_set_piece_type(move, KING_W);
+
+    config_execute_move(config, move);
+
+    position_t *expected_rook_position = position_new();
+    position_set_x(expected_rook_position, 7);
+    position_set_y(expected_rook_position, 5);
+
+    piece = config_get_piece(config, WHITE, expected_rook_position);
+    assert_non_null(piece);
+    assert_true(piece_get_type(piece) == ROOK_W);
+
+    position_dtor(king_position);
+    position_dtor(castle_position);
+    move_dtor(move);
+    config_dtor(config);
+    free(king_position);
+    free(castle_position);
+    free(move);
+    free(config);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
@@ -178,6 +224,7 @@ int main(void) {
             cmocka_unit_test(test_config_valid_move_pawn),
             cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_valid_move_en_passant),
+            cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_cpu_move)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
