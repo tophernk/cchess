@@ -31,11 +31,21 @@ bool __is_pawn(piece_t *piece);
 
 int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t, config_t *config);
 
-int __can_long_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t, config_t *pConfig);
+int __can_long_castle(int xfrom, int xto, piece_color_t, config_t *pConfig);
 
-int __can_short_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig);
+int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig);
 
 void __move_en_passant(config_t *conf, const piece_t *piece, int xto);
+
+bool __castle_king_on_first_rank(int yfrom, piece_color_t color);
+
+bool __castle_long(int xfrom, int xto);
+
+bool __field_is_blocked(int x, int y, config_t *pConfig);
+
+bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *pConfig);
+
+int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result);
 
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
@@ -216,32 +226,75 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
 int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t pieceType, config_t *config) {
     int xmove = abs(xfrom - xto);
     int ymove = abs(yfrom - yto);
-    int result;
 
     if (xmove > 2 || ymove > 1) {
-        result = 0;
+        return 0;
     } else if (xmove == 1) {
-        result = 1;
+        return 1;
     } else if (xmove == 2) {
         piece_color_t color = piece_get_color(pieceType);
-        result = __can_short_castle(xfrom, yfrom, xto, yto, color, config) || __can_long_castle(xfrom, yfrom, xto, yto, color, config);
-    }
-    return result;
-}
-
-int __can_short_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig) {
-    if (color == BLACK && pConfig->short_castles_black) {
-        return 3;
-    } else if (color == WHITE && pConfig->short_castles_white) {
-        return 4;
+        if (!__castle_king_on_first_rank(yfrom, color)) {
+            return 0;
+        }
+        return __castle_long(xfrom, xto) ? __can_long_castle(xfrom, xto, color, config) : __can_short_castle(xfrom, xto, color, config);
     }
     return 0;
 }
 
-int __can_long_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig) {
+bool __castle_long(int xfrom, int xto) {
+    return xfrom > xto;
+}
+
+bool __castle_king_on_first_rank(int yfrom, piece_color_t color) {
+    return color == BLACK ? yfrom == 0 : yfrom == 7;
+}
+
+int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig) {
+    int y = color == WHITE ? 7 : 0;
+    if (color == BLACK && pConfig->short_castles_black) {
+        return __castle_clear_king_path_without_checks(xfrom, xto, 1, BLACK, pConfig, y, 3);
+    } else if (color == WHITE && pConfig->short_castles_white) {
+        return __castle_clear_king_path_without_checks(xfrom, xto, 1, WHITE, pConfig, y, 4);
+    }
+    return 0;
+}
+
+int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result) {
+    piece_color_t attacking_color = color == WHITE ? BLACK : WHITE;
+    for (int x = xfrom + xstep; x <= xto; x+=xstep) {
+        if (__field_is_blocked(x, y, pConfig) || __field_is_attacked(x, y, attacking_color, pConfig)) {
+            return 0;
+        }
+    }
+    return success_result;
+}
+
+bool __field_is_blocked(int x, int y, config_t *pConfig) {
+    return pConfig->board[x][y] > NONE;
+}
+
+bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *pConfig) {
+    piece_t **attackers = attacking_color == WHITE ? pConfig->white : pConfig->black;
+    position_t *pos_to_check = position_new();
+    position_set_x(pos_to_check, x);
+    position_set_y(pos_to_check, y);
+    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
+        piece_t *current_attacker = attackers[i];
+        for (int ii = 0; ii < MAX_POSITIONS; ii++) {
+            if (position_equal(pos_to_check, piece_get_available_position(current_attacker, ii))) {
+                free(pos_to_check);
+                return true;
+            }
+        }
+    }
+    free(pos_to_check);
+    return false;
+}
+
+int __can_long_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig) {
     if (color == BLACK && pConfig->long_castles_black) {
         return 5;
-    } else if(color == WHITE && pConfig->long_castles_white) {
+    } else if (color == WHITE && pConfig->long_castles_white) {
         return 6;
     }
     return 0;
