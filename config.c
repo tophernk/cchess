@@ -29,6 +29,14 @@ void __clear_en_passant_flag(config_t *);
 
 bool __is_pawn(piece_t *piece);
 
+int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t, config_t *config);
+
+int __can_long_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t, config_t *pConfig);
+
+int __can_short_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig);
+
+void __move_en_passant(config_t *conf, const piece_t *piece, int xto);
+
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
 }
@@ -47,7 +55,12 @@ void config_ctor(config_t *config) {
         piece_ctor(config->black[i]);
     }
 
-    config->check_white = 0;
+    config->check_black = false;
+    config->check_white = false;
+    config->short_castles_black = true;
+    config->short_castles_white = true;
+    config->long_castles_black = true;
+    config->long_castles_white = true;
 }
 
 void config_dtor(config_t *config) {
@@ -184,11 +197,7 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     } else if (piece_at_from_position == ROOK_W || piece_at_from_position == ROOK_B) {
         result = __is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
     } else if (piece_at_from_position == KING_W || piece_at_from_position == KING_B) {
-        if (xmove > 1 || ymove > 1) {
-            result = 0;
-        } else {
-            result = 1;
-        }
+        result = __is_valid_king_move(xfrom, yfrom, xto, yto, piece_at_from_position, conf);
     } else if (piece_at_from_position == QUEEN_W || piece_at_from_position == QUEEN_B) {
         result = __is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
     }
@@ -202,6 +211,40 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     }
 
     return result;
+}
+
+int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t pieceType, config_t *config) {
+    int xmove = abs(xfrom - xto);
+    int ymove = abs(yfrom - yto);
+    int result;
+
+    if (xmove > 2 || ymove > 1) {
+        result = 0;
+    } else if (xmove == 1) {
+        result = 1;
+    } else if (xmove == 2) {
+        piece_color_t color = piece_get_color(pieceType);
+        result = __can_short_castle(xfrom, yfrom, xto, yto, color, config) || __can_long_castle(xfrom, yfrom, xto, yto, color, config);
+    }
+    return result;
+}
+
+int __can_short_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig) {
+    if (color == BLACK && pConfig->short_castles_black) {
+        return 3;
+    } else if (color == WHITE && pConfig->short_castles_white) {
+        return 4;
+    }
+    return 0;
+}
+
+int __can_long_castle(int xfrom, int yfrom, int xto, int yto, piece_color_t color, config_t *pConfig) {
+    if (color == BLACK && pConfig->long_castles_black) {
+        return 5;
+    } else if(color == WHITE && pConfig->long_castles_white) {
+        return 6;
+    }
+    return 0;
 }
 
 int __is_providing_check(config_t *config, int xto, int yto) {
@@ -341,14 +384,7 @@ int config_execute_move(config_t *conf, move_t *move) {
             if (conf->board[xto][yto] > NONE) {
                 config_remove_piece(conf, to);
             } else if (conf->board[xto][yto] == EN_PASSANT && __is_pawn(piece)) {
-                int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
-                position_t *en_passant_piece_position = position_new();
-                position_set_x(en_passant_piece_position, xto);
-                position_set_y(en_passant_piece_position, en_passant_piece_rank);
-                config_remove_piece(conf, en_passant_piece_position);
-                conf->board[xto][en_passant_piece_rank] = NONE;
-                position_dtor(en_passant_piece_position);
-                free(en_passant_piece_position);
+                __move_en_passant(conf, piece, xto);
             }
             if (valid_move == 2) {
                 int en_passant_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 5 : 2;
@@ -383,6 +419,17 @@ int config_execute_move(config_t *conf, move_t *move) {
     free(backup_config);
 
     return move_executed ? config_eval(conf, BLACK) : -9999;
+}
+
+void __move_en_passant(config_t *conf, const piece_t *piece, int xto) {
+    int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
+    position_t *en_passant_piece_position = position_new();
+    position_set_x(en_passant_piece_position, xto);
+    position_set_y(en_passant_piece_position, en_passant_piece_rank);
+    config_remove_piece(conf, en_passant_piece_position);
+    conf->board[xto][en_passant_piece_rank] = NONE;
+    position_dtor(en_passant_piece_position);
+    free(en_passant_piece_position);
 }
 
 bool __is_pawn(piece_t *piece) {

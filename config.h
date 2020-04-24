@@ -30,6 +30,14 @@ int config_move_cpu(config_t *);
 
 void config_calculate_move(config_t *, move_t *);
 
+/**
+ *
+ * @return
+ * 0 - invalid moves
+ * 1 - valid regular moves
+ * 2 - valid en passants
+ * 3 to 6 - valid castles (black/white short/long)
+ */
 int config_valid_move(config_t *, piece_t *, int xto, int yto);
 
 void config_print(config_t *);
