@@ -221,6 +221,7 @@ static void test_config_short_castle(void **state) {
 static void test_config_long_castle(void **state) {
     config_t *config = config_new();
     config_ctor(config);
+    config_enable_long_castles(config, WHITE);
 
     config_add_piece(config, KING_W, 4, 7, WHITE, 0);
     config_add_piece(config, ROOK_W, 0, 7, WHITE, 1);
@@ -247,8 +248,8 @@ static void test_config_long_castle(void **state) {
     config_execute_move(config, move);
 
     position_t *expected_rook_position = position_new();
-    position_set_x(expected_rook_position, 7);
-    position_set_y(expected_rook_position, 3);
+    position_set_x(expected_rook_position, 3);
+    position_set_y(expected_rook_position, 7);
 
     piece = config_get_piece(config, WHITE, expected_rook_position);
     assert_non_null(piece);
