@@ -46,6 +46,10 @@ int config_move_available(config_t *, piece_color_t);
 
 void config_enable_short_castles(config_t *, piece_color_t);
 
+void config_disable_short_castles(config_t *, piece_color_t);
+
 void config_enable_long_castles(config_t *, piece_color_t);
+
+void config_disable_long_castles(config_t *, piece_color_t);
 
 #endif //CCHESS_CONFIG_H

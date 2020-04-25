@@ -35,19 +35,21 @@ int __can_long_castle(int xfrom, int xto, piece_color_t, config_t *pConfig);
 
 int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig);
 
-void __move_en_passant(config_t *conf, const piece_t *piece, int xto);
+void __move_en_passant(config_t *conf, piece_t *piece, int xto);
 
 bool __castle_king_on_first_rank(int yfrom, piece_color_t color);
 
 bool __castle_long(int xfrom, int xto);
 
-bool __field_is_blocked(int x, int y, config_t *pConfig);
+bool __field_is_blocked(int x, int y, const config_t *pConfig);
 
 bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *pConfig);
 
-int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result);
+int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, config_t *pConfig, int y, int success_result);
 
 void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int xto);
+
+void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type);
 
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
@@ -190,8 +192,6 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     position_t *from_position = piece_get_current_position(piece);
     int xfrom = position_get_x(from_position);
     int yfrom = position_get_y(from_position);
-    int xmove = abs(xfrom - xto);
-    int ymove = abs(yfrom - yto);
 
     piece_type_t piece_at_to_position = conf->board[xto][yto];
     if (piece_at_to_position > NONE) {
@@ -261,7 +261,7 @@ int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfi
     return 0;
 }
 
-int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result) {
+int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, config_t *pConfig, int y, int success_result) {
     piece_color_t attacking_color = color == WHITE ? BLACK : WHITE;
     for (int x = xfrom + xstep; x <= xto; x += xstep) {
         if (__field_is_blocked(x, y, pConfig) || __field_is_attacked(x, y, attacking_color, pConfig)) {
@@ -271,7 +271,7 @@ int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece
     return success_result;
 }
 
-bool __field_is_blocked(int x, int y, config_t *pConfig) {
+bool __field_is_blocked(int x, int y, const config_t *pConfig) {
     return pConfig->board[x][y] > NONE;
 }
 
@@ -436,7 +436,8 @@ int config_execute_move(config_t *conf, move_t *move) {
         piece_t *piece = config_get_piece(conf, move_color, move_get_from_position(move));
         int valid_move = config_valid_move(conf, piece, position_get_x(to), position_get_y(to));
         if (valid_move) {
-            conf->board[position_get_x(from)][position_get_y(from)] = NONE;
+            int xfrom = position_get_x(from);
+            conf->board[xfrom][position_get_y(from)] = NONE;
 
             int xto = position_get_x(to);
             int yto = position_get_y(to);
@@ -445,8 +446,9 @@ int config_execute_move(config_t *conf, move_t *move) {
             } else if (conf->board[xto][yto] == EN_PASSANT && __is_pawn(piece)) {
                 __move_en_passant(conf, piece, xto);
             }
+            piece_type_t type = piece_get_type(piece);
             if (valid_move == 2) {
-                int en_passant_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 5 : 2;
+                int en_passant_rank = piece_get_color(type) == WHITE ? 5 : 2;
                 conf->board[xto][en_passant_rank] = EN_PASSANT;
             } else {
                 __clear_en_passant_flag(conf);
@@ -457,8 +459,10 @@ int config_execute_move(config_t *conf, move_t *move) {
             if (valid_move == 5 || valid_move == 6) {
                 __castle_rook_move(conf, move_color, 0, 3);
             }
+            __config_update_castle_flags(conf, xfrom, &type);
+
             piece_set_current_position(piece, xto, yto);
-            conf->board[xto][yto] = piece_get_type(piece);
+            conf->board[xto][yto] = type;
 
             config_update_available_positions(conf);
 
@@ -485,6 +489,24 @@ int config_execute_move(config_t *conf, move_t *move) {
     return move_executed ? config_eval(conf, BLACK) : -9999;
 }
 
+void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type) {
+    if ((*type) == KING_W) {
+        config_disable_short_castles(conf, WHITE);
+        config_disable_long_castles(conf, WHITE);
+    } else if ((*type) == KING_B) {
+        config_disable_short_castles(conf, BLACK);
+        config_disable_long_castles(conf, BLACK);
+    } else if ((*type) == ROOK_W && xfrom == 0) {
+        config_disable_long_castles(conf, WHITE);
+    } else if ((*type) == ROOK_W && xfrom == 7) {
+        config_disable_short_castles(conf, WHITE);
+    } else if ((*type) == ROOK_B && xfrom == 0) {
+        config_disable_long_castles(conf, BLACK);
+    } else if ((*type) == ROOK_B && xfrom == 7) {
+        config_disable_short_castles(conf, BLACK);
+    }
+}
+
 void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int xto) {
     int y = color == BLACK ? 0 : 7;
     position_t *pPosition = position_new();
@@ -501,7 +523,7 @@ void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int x
     free(pPosition);
 }
 
-void __move_en_passant(config_t *conf, const piece_t *piece, int xto) {
+void __move_en_passant(config_t *conf, piece_t *piece, int xto) {
     int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
     position_t *en_passant_piece_position = position_new();
     position_set_x(en_passant_piece_position, xto);
@@ -656,10 +678,26 @@ void config_enable_short_castles(config_t *config, piece_color_t color) {
     }
 }
 
+void config_disable_short_castles(config_t *config, piece_color_t color) {
+    if (color == BLACK) {
+        config->short_castles_black = 0;
+    } else {
+        config->short_castles_white = 0;
+    }
+}
+
 void config_enable_long_castles(config_t *config, piece_color_t color) {
     if (color == BLACK) {
         config->long_castles_black = 1;
     } else {
         config->long_castles_white = 1;
+    }
+}
+
+void config_disable_long_castles(config_t *config, piece_color_t color) {
+    if (color == BLACK) {
+        config->long_castles_black = 0;
+    } else {
+        config->long_castles_white = 0;
     }
 }
