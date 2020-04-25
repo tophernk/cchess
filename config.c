@@ -47,6 +47,8 @@ bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *
 
 int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result);
 
+void __castle_short_move_rook(config_t *pConfig, piece_color_t color);
+
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
 }
@@ -67,10 +69,10 @@ void config_ctor(config_t *config) {
 
     config->check_black = false;
     config->check_white = false;
-    config->short_castles_black = true;
-    config->short_castles_white = true;
-    config->long_castles_black = true;
-    config->long_castles_white = true;
+    config->short_castles_black = false;
+    config->short_castles_white = false;
+    config->long_castles_black = false;
+    config->long_castles_white = false;
 }
 
 void config_dtor(config_t *config) {
@@ -261,7 +263,7 @@ int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfi
 
 int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, const config_t *pConfig, int y, int success_result) {
     piece_color_t attacking_color = color == WHITE ? BLACK : WHITE;
-    for (int x = xfrom + xstep; x <= xto; x+=xstep) {
+    for (int x = xfrom + xstep; x <= xto; x += xstep) {
         if (__field_is_blocked(x, y, pConfig) || __field_is_attacked(x, y, attacking_color, pConfig)) {
             return 0;
         }
@@ -445,6 +447,9 @@ int config_execute_move(config_t *conf, move_t *move) {
             } else {
                 __clear_en_passant_flag(conf);
             }
+            if (valid_move == 3 || valid_move == 4) {
+                __castle_short_move_rook(conf, move_color);
+            }
 
             piece_set_current_position(piece, xto, yto);
             conf->board[xto][yto] = piece_get_type(piece);
@@ -472,6 +477,24 @@ int config_execute_move(config_t *conf, move_t *move) {
     free(backup_config);
 
     return move_executed ? config_eval(conf, BLACK) : -9999;
+}
+
+void __castle_short_move_rook(config_t *pConfig, piece_color_t color) {
+    int xfrom = 7;
+    int xto = 5;
+    int y = color == BLACK ? 0 : 7;
+    position_t *pPosition = position_new();
+
+    position_set_x(pPosition, xfrom);
+    position_set_y(pPosition, y);
+    piece_t *pPiece = config_get_piece(pConfig, color, pPosition);
+
+    position_t *rook_position = piece_get_current_position(pPiece);
+    position_set_x(rook_position, xto);
+    pConfig->board[xfrom][y] = NONE;
+    pConfig->board[xto][y] = color == BLACK ? ROOK_B : ROOK_W;
+
+    free(pPosition);
 }
 
 void __move_en_passant(config_t *conf, const piece_t *piece, int xto) {
@@ -618,5 +641,13 @@ void config_copy(config_t *src, config_t *dst) {
             piece_copy(src->white[i], dst->white[i]);
             piece_copy(src->black[i], dst->black[i]);
         }
+    }
+}
+
+void config_enable_short_castles(config_t *config, piece_color_t color) {
+    if (color == BLACK) {
+        config->short_castles_black = 1;
+    } else {
+        config->short_castles_white = 1;
     }
 }
