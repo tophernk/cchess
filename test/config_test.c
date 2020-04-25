@@ -210,10 +210,12 @@ static void test_config_short_castle(void **state) {
 
     position_dtor(king_position);
     position_dtor(castle_position);
+    position_dtor(expected_rook_position);
     move_dtor(move);
     config_dtor(config);
     free(king_position);
     free(castle_position);
+    free(expected_rook_position);
     free(move);
     free(config);
 }
@@ -257,10 +259,12 @@ static void test_config_long_castle(void **state) {
 
     position_dtor(king_position);
     position_dtor(castle_position);
+    position_dtor(expected_rook_position);
     move_dtor(move);
     config_dtor(config);
     free(king_position);
     free(castle_position);
+    free(expected_rook_position);
     free(move);
     free(config);
 }
