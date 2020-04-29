@@ -25,11 +25,11 @@ pipeline {
                 sh "valgrind --leak-check=full ./test/config_test"
             }
         }
-        stage('Docker') {
+        /* stage('Docker') {
             steps {
                 sh "docker build -t cchess ."
                 sh "docker tag cchess localhost:5000/cchess"
             }
-        }
+        } */
     }
 }
