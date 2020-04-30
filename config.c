@@ -55,7 +55,7 @@ void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int x
 
 void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type);
 
-int __fen_parse_board(config_t *config, const char *fen, int rank, int x, int white_i, int black_i, int i);
+void __fen_parse_board(config_t *config, const char *fen, int rank, int *x, int *white_i, int *black_i, int i);
 
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
@@ -117,7 +117,7 @@ void config_fen_in(config_t *config, char *fen) {
             continue;
         }
         if (sep_i == 0 && rank < 8 && x < 8) {
-            x = __fen_parse_board(config, fen, rank, x, white_i, black_i, i);
+            __fen_parse_board(config, fen, rank, &x, &white_i, &black_i, i);
             continue;
         }
         if (sep_i == 1) {
@@ -161,17 +161,15 @@ void config_fen_in(config_t *config, char *fen) {
     config_update_available_positions(config);
 }
 
-int __fen_parse_board(config_t *config, const char *fen, int rank, int x, int white_i, int black_i, int i) {
+void __fen_parse_board(config_t *config, const char *fen, int rank, int *x, int *white_i, int *black_i, int i) {
     piece_type_t piece = piece_char_to_type(fen[i]);
     if (piece != NONE) {
-        config->board[x][rank] = piece_char_to_type(fen[i]);
         piece_color_t color = piece_get_color(piece);
-        config_add_piece(config, piece, x, rank, color, color == WHITE ? white_i++ : black_i++);
-        x++;
+        config_add_piece(config, piece, *x, rank, color, color == WHITE ? (*white_i)++ : (*black_i)++);
+        (*x)++;
     } else {
-        x += fen[i] - '0';
+        (*x) += fen[i] - '0';
     }
-    return x;
 }
 
 void config_add_piece(config_t *config, piece_type_t type, int x, int y, piece_color_t color, int index) {

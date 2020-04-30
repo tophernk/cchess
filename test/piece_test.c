@@ -52,7 +52,7 @@ static void test_piece_get_color(void **state) {
 }
 
 static void test_piece_to_char(void **state) {
-    assert_int_equal(piece_type_to_char(PAWN_B), 'P');
+    assert_int_equal(piece_type_to_char(PAWN_B), 'p');
     assert_int_equal(piece_type_to_char(PAWN_W), 'P');
 }
 
