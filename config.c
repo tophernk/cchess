@@ -1,11 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "config.h"
 #include "cchess.h"
 #include "config_p.h"
 #include "move.h"
 #include "logger.h"
+
+#define FEN_SEPARATOR ' '
+#define FEN_SEPARATOR_RANK '/'
 
 int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
 
@@ -51,6 +55,8 @@ void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int x
 
 void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type);
 
+int __fen_parse_board(config_t *config, const char *fen, int rank, int x, int white_i, int black_i, int i);
+
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
 }
@@ -85,6 +91,87 @@ void config_dtor(config_t *config) {
         piece_dtor(config->black[i]);
         free(config->black[i]);
     }
+}
+
+void config_fen_in(config_t *config, char *fen) {
+    config_ctor(config);
+    int len = strlen(fen);
+    int rank = 0;
+    int x = 0;
+    int white_i = 0;
+    int black_i = 0;
+    int sep_i = 0;
+    int en_passant_x = -1;
+    int en_passant_y = -1;
+    int en_passant_i = 0;
+
+    for (int i = 0; i < len; i++) {
+        char value = fen[i];
+        if (value == FEN_SEPARATOR_RANK) {
+            x = 0;
+            rank++;
+            continue;
+        }
+        if (value == FEN_SEPARATOR) {
+            sep_i++;
+            continue;
+        }
+        if (sep_i == 0 && rank < 8 && x < 8) {
+            x = __fen_parse_board(config, fen, rank, x, white_i, black_i, i);
+            continue;
+        }
+        if (sep_i == 1) {
+            // w/b -> white or black turn
+            continue;
+        }
+        if (sep_i == 2) {
+            // castles
+            if (value == 'K') {
+                config->short_castles_white = true;
+            } else if (value == 'Q') {
+                config->long_castles_white = true;
+            } else if (value == 'k') {
+                config->short_castles_black = true;
+            } else if (value == 'q') {
+                config->long_castles_black = true;
+            }
+            continue;
+        }
+        if (sep_i == 3) {
+            // en passant field
+            if (en_passant_i == 0) {
+                en_passant_x = value - FILE_OFFSET;
+                en_passant_i++;
+            } else {
+                en_passant_y = value - '1';
+                config->board[en_passant_x][en_passant_y] = EN_PASSANT;
+            }
+            continue;
+        }
+        if (sep_i == 4) {
+            // meta: half move #
+            continue;
+        }
+        if (sep_i == 5) {
+            // meta: full move #
+            continue;
+        }
+        printf(" undefined");
+    }
+    config_update_available_positions(config);
+}
+
+int __fen_parse_board(config_t *config, const char *fen, int rank, int x, int white_i, int black_i, int i) {
+    piece_type_t piece = piece_char_to_type(fen[i]);
+    if (piece != NONE) {
+        config->board[x][rank] = piece_char_to_type(fen[i]);
+        piece_color_t color = piece_get_color(piece);
+        config_add_piece(config, piece, x, rank, color, color == WHITE ? white_i++ : black_i++);
+        x++;
+    } else {
+        x += fen[i] - '0';
+    }
+    return x;
 }
 
 void config_add_piece(config_t *config, piece_type_t type, int x, int y, piece_color_t color, int index) {

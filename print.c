@@ -42,11 +42,5 @@ void __print_intermediate_line() {
 
 void __print_piece(piece_type_t type) {
     printf("|   ");
-    printf("%c", piece_type_to_char(type));
-
-    if (type > QUEEN_W) {
-        printf("*  ");
-    } else {
-        printf("   ");
-    }
+    printf("%c   ", piece_type_to_char(type));
 }

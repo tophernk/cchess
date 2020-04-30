@@ -79,25 +79,62 @@ int piece_type_get_weight(piece_type_t type) {
 char piece_type_to_char(piece_type_t piece) {
     switch (piece) {
         case PAWN_W:
-        case PAWN_B:
             return 'P';
+        case PAWN_B:
+            return 'p';
         case KNIGHT_W:
-        case KNIGHT_B:
             return 'N';
+        case KNIGHT_B:
+            return 'n';
         case BISHOP_W:
-        case BISHOP_B:
             return 'B';
+        case BISHOP_B:
+            return 'b';
         case ROOK_W:
-        case ROOK_B:
             return 'R';
+        case ROOK_B:
+            return 'r';
         case QUEEN_W:
-        case QUEEN_B:
             return 'Q';
+        case QUEEN_B:
+            return 'q';
         case KING_W:
-        case KING_B:
             return 'K';
+        case KING_B:
+            return 'k';
         default:
             return ' ';
+    }
+}
+
+piece_type_t piece_char_to_type(char fenv) {
+    switch (fenv) {
+        case 'P':
+            return PAWN_W;
+        case 'p':
+            return PAWN_B;
+        case 'N':
+            return KNIGHT_W;
+        case 'n':
+            return KNIGHT_B;
+        case 'B':
+            return BISHOP_W;
+        case 'b':
+            return BISHOP_B;
+        case 'R':
+            return ROOK_W;
+        case 'r':
+            return ROOK_B;
+        case 'Q':
+            return QUEEN_W;
+        case 'q':
+            return QUEEN_B;
+        case 'K':
+            return KING_W;
+        case 'k':
+            return KING_B;
+        default:
+            return NONE;
     }
 }
 

@@ -16,13 +16,14 @@ void cchess_init(config_t *config) {
     config_update_available_positions(config);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     srand(0);
     remove(CCHESS_LOG);
 
     config_t *config = config_new();
-    config_ctor(config);
-    cchess_init(config);
+    config_fen_in(config, argv[1]);
+    //config_ctor(config);
+    //cchess_init(config);
     config_print(config);
 
     position_t *from = position_new();

@@ -45,6 +45,8 @@ void piece_set_type(piece_t *, piece_type_t);
 
 char piece_type_to_char(piece_type_t);
 
+piece_type_t piece_char_to_type(char);
+
 int piece_type_get_weight(piece_type_t);
 
 void piece_invalidate_available_positions(piece_t *);
