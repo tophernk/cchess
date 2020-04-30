@@ -21,9 +21,12 @@ int main(int argc, char *argv[]) {
     remove(CCHESS_LOG);
 
     config_t *config = config_new();
-    config_fen_in(config, argv[1]);
-    //config_ctor(config);
-    //cchess_init(config);
+    if (argc > 1) {
+        config_fen_in(config, argv[1]);
+    } else {
+        config_ctor(config);
+        cchess_init(config);
+    }
     config_print(config);
 
     position_t *from = position_new();
@@ -46,8 +49,8 @@ int main(int argc, char *argv[]) {
 
         position_set_x(from, from_x - FILE_OFFSET);
         position_set_y(from, (from_y - BOARD_SIZE) * -1);
-        position_set_x(to, to_x-FILE_OFFSET);
-        position_set_y(to, (to_y -BOARD_SIZE) *-1);
+        position_set_x(to, to_x - FILE_OFFSET);
+        position_set_y(to, (to_y - BOARD_SIZE) * -1);
 
         piece_t *piece = config_get_piece(config, WHITE, from);
 
@@ -71,11 +74,11 @@ int main(int argc, char *argv[]) {
         getchar(); // discard newline from input
         if (pieceMoved) {
             pieceMoved = config_move_cpu(config);
-            if(!config_move_available(config, WHITE)) {
+            if (!config_move_available(config, WHITE)) {
                 printf("no move available for white\n");
                 break;
             }
-       }
+        }
     }
     printf("exit.. (no piece moved)\n");
 
