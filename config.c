@@ -29,8 +29,6 @@ int __abs(int);
 
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth);
 
-void __clear_en_passant_flag(config_t *);
-
 bool __is_pawn(piece_t *piece);
 
 int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t, config_t *config);
@@ -81,6 +79,9 @@ void config_ctor(config_t *config) {
     config->short_castles_white = false;
     config->long_castles_black = false;
     config->long_castles_white = false;
+
+    config->enpassant[0] = '-';
+    config->enpassant[1] = '-';
 }
 
 void config_dtor(config_t *config) {
@@ -139,13 +140,8 @@ void config_fen_in(config_t *config, char *fen) {
         }
         if (sep_i == 3) {
             // en passant field
-            if (en_passant_i == 0) {
-                en_passant_x = value - FILE_OFFSET;
-                en_passant_i++;
-            } else {
-                en_passant_y = value - '1';
-                config->board[en_passant_x][en_passant_y] = EN_PASSANT;
-            }
+            config->enpassant[en_passant_i] = value;
+            en_passant_i++;
             continue;
         }
         if (sep_i == 4) {
@@ -411,7 +407,7 @@ int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *confi
         if (yfrom != pawn_start_y) {
             return 0;
         }
-        if (config->board[xfrom][yfrom + y_direction] > NONE) {
+        if (config->board[xfrom][yfrom + y_direction] != NONE) {
             return 0;
         }
         return 2;
@@ -419,10 +415,10 @@ int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *confi
     if (xmove > 1) {
         return 0;
     }
-    if (xmove == 1 && piece_at_to_position == NONE) {
+    if (xmove == 1 && piece_at_to_position == NONE && !config_en_passant(config, xto, yto)) {
         return 0;
     }
-    if (ymove == 1 && xmove == 0 && piece_at_to_position > NONE) {
+    if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
         return 0;
     }
     if (piece_at_from_position == PAWN_W && yfrom - yto != 1) {
@@ -528,15 +524,17 @@ int config_execute_move(config_t *conf, move_t *move) {
             int yto = position_get_y(to);
             if (conf->board[xto][yto] > NONE) {
                 config_remove_piece(conf, to);
-            } else if (conf->board[xto][yto] == EN_PASSANT && __is_pawn(piece)) {
+            } else if (config_en_passant(conf, xto, yto) && __is_pawn(piece)) {
                 __move_en_passant(conf, piece, xto);
             }
             piece_type_t type = piece_get_type(piece);
             if (valid_move == 2) {
                 int en_passant_rank = piece_get_color(type) == WHITE ? 5 : 2;
-                conf->board[xto][en_passant_rank] = EN_PASSANT;
+                conf->enpassant[0] = xto + FILE_OFFSET;
+                conf->enpassant[1] = (en_passant_rank - BOARD_SIZE) * -1 + '0';
             } else {
-                __clear_en_passant_flag(conf);
+                conf->enpassant[0] = '-';
+                conf->enpassant[1] = '-';
             }
             if (valid_move == 3 || valid_move == 4) {
                 __castle_rook_move(conf, move_color, 7, 5);
@@ -622,17 +620,6 @@ void __move_en_passant(config_t *conf, piece_t *piece, int xto) {
 bool __is_pawn(piece_t *piece) {
     piece_type_t type = piece_get_type(piece);
     return type == PAWN_B || type == PAWN_W;
-}
-
-void __clear_en_passant_flag(config_t *config) {
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        if (config->board[x][5] == EN_PASSANT) {
-            config->board[x][5] = NONE;
-        }
-        if (config->board[x][2] == EN_PASSANT) {
-            config->board[x][2] = NONE;
-        }
-    }
 }
 
 void config_remove_piece(config_t *cfg, position_t *position) {
@@ -747,6 +734,8 @@ void config_copy(config_t *src, config_t *dst) {
     dst->long_castles_white = src->long_castles_white;
     dst->short_castles_black = src->short_castles_black;
     dst->long_castles_black = src->long_castles_black;
+    dst->enpassant[0] = src->enpassant[0];
+    dst->enpassant[1] = src->enpassant[1];
 
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
@@ -790,4 +779,15 @@ void config_disable_long_castles(config_t *config, piece_color_t color) {
     } else {
         config->long_castles_white = 0;
     }
+}
+
+int config_en_passant(config_t *config, int x, int y) {
+    if (config->enpassant[0] == '-' || config->enpassant[1] == '-') {
+        return 0;
+    }
+
+    int enpassant_x = config->enpassant[0] - FILE_OFFSET;
+    int enpassant_y = (config->enpassant[1] - '0' - BOARD_SIZE) * -1;
+
+    return enpassant_x == x && enpassant_y == y;
 }

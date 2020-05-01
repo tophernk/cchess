@@ -168,6 +168,8 @@ static void test_config_copy(void **state) {
     config_enable_long_castles(config, BLACK);
     config_enable_short_castles(config, WHITE);
     config_enable_long_castles(config, WHITE);
+    config->enpassant[0] = 'a';
+    config->enpassant[1] = '3';
 
     config_copy(config, copy);
 
@@ -178,6 +180,7 @@ static void test_config_copy(void **state) {
     assert_int_equal(config->long_castles_black, copy->long_castles_black);
     assert_int_equal(config->long_castles_white, copy->long_castles_white);
     assert_memory_equal(config->board, copy->board, sizeof(BOARD_SIZE * 2 * sizeof(piece_type_t)));
+    assert_memory_equal(config->enpassant, copy->enpassant, sizeof(char) * 2);
 
     config_dtor(copy);
     free(copy);

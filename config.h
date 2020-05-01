@@ -34,6 +34,8 @@ int config_move_cpu(config_t *);
 
 void config_calculate_move(config_t *, move_t *);
 
+int config_en_passant(config_t *, int x, int y);
+
 /**
  *
  * @return
