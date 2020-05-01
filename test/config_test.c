@@ -146,18 +146,6 @@ void test_config_cpu_move(void **state) {
     free(config);
 }
 
-void test_config_en_passant_from_standard_starting_position(void **state) {
-    config_t *config = config_new();
-    // a3 has been played
-    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
-
-    int piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-
-    config_dtor(config);
-    free(config);
-}
-
 static void test_config_copy(void **state) {
     config_t *config = config_new();
     config_ctor(config);
@@ -276,6 +264,63 @@ static void test_config_long_castle(void **state) {
     free(config);
 }
 
+void test_config_cpu_move_from_standard_starting_position(void **state) {
+    config_t *config = config_new();
+    // a3 has been played
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
+
+    int piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
+
+    config_dtor(config);
+    free(config);
+}
+
+void test_config_multiple_cpu_moves(void **state) {
+    config_t *config = config_new();
+    // a3 has been played
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
+
+    int piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
+
+    position_t *from_position = position_new();
+    position_set_x(from_position, 0);
+    position_set_y(from_position, 5);
+
+    position_t *to_position = position_new();
+    position_set_x(to_position, 0);
+    position_set_y(to_position, 4);
+
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_from_position(move, from_position);
+    move_set_to_position(move, to_position);
+    move_set_piece_type(move, PAWN_W);
+
+    piece_moved = config_execute_move(config, move);
+    assert_true(MOVE_EXECUTED(piece_moved));
+
+    config_t *copy = config_new();
+    config_ctor(copy);
+    config_copy(config, copy);
+
+    piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
+    assert_memory_not_equal(config->board, copy->board, 2 * BOARD_SIZE * sizeof(piece_type_t));
+
+    position_dtor(from_position);
+    position_dtor(to_position);
+    free(from_position);
+    free(to_position);
+    move_dtor(move);
+    free(move);
+    config_dtor(copy);
+    config_dtor(config);
+    free(copy);
+    free(config);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
@@ -283,10 +328,11 @@ int main(void) {
             cmocka_unit_test(test_config_valid_move_pawn),
             cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_valid_move_en_passant),
-            cmocka_unit_test(test_config_en_passant_from_standard_starting_position),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
-            cmocka_unit_test(test_config_cpu_move)
+            cmocka_unit_test(test_config_cpu_move),
+            cmocka_unit_test(test_config_cpu_move_from_standard_starting_position),
+            cmocka_unit_test(test_config_multiple_cpu_moves)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
