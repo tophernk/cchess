@@ -4,6 +4,8 @@
 #include "piece.h"
 #include "move.h"
 
+#define MOVE_EXECUTED(x) (x != -9999)
+
 typedef struct config config_t;
 
 config_t *config_new();

@@ -102,8 +102,6 @@ void config_fen_in(config_t *config, char *fen) {
     int white_i = 0;
     int black_i = 0;
     int sep_i = 0;
-    int en_passant_x = -1;
-    int en_passant_y = -1;
     int en_passant_i = 0;
 
     for (int i = 0; i < len; i++) {
@@ -645,20 +643,20 @@ void config_remove_piece(config_t *cfg, position_t *position) {
 
 int config_move_cpu(config_t *conf) {
     printf("cpu move...\n");
-    int piece_moved = 0;
+    int result = 0;
     move_t *next_move = move_new();
     move_ctor(next_move);
     config_calculate_move(conf, next_move);
 
     if (move_get_piece_type(next_move) > NONE && position_valid(move_get_to_position(next_move))) {
-        piece_moved = config_execute_move(conf, next_move);
+        result = config_execute_move(conf, next_move);
     }
     config_print(conf);
 
     move_dtor(next_move);
     free(next_move);
 
-    return piece_moved;
+    return MOVE_EXECUTED(result);
 }
 
 void config_calculate_move(config_t *conf, move_t *calculated_move) {

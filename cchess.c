@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         move_set_piece_type(move, piece_get_type(piece));
 
         int eval = config_execute_move(config, move);
-        if ((eval != -9999)) {
+        if (MOVE_EXECUTED(eval)) {
             pieceMoved = 1;
             config_print(config);
         } else {
