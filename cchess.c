@@ -15,38 +15,38 @@ int main(int argc, char *argv[]) {
         config_ctor(config);
         config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
     }
+
     config_print(config);
 
-    position_t *from = position_new();
-    position_ctor(from);
-    position_t *to = position_new();
-    position_ctor(to);
+    position_t *fromp = position_new();
+    position_ctor(fromp);
+    position_t *top = position_new();
+    position_ctor(top);
 
     move_t *move = move_new();
     move_ctor(move);
-
+    char from[2];
+    char to[2];
     int pieceMoved = 1;
-    while (pieceMoved) {
-        char from_x, to_x, from_y, to_y;
 
-        while (scanf("%c %c %c %c", &from_x, &from_y, &to_x, &to_y) != 4) {
-            while ((from_x = getchar()) != EOF && from_x != '\n');
+    while (pieceMoved) {
+        while (scanf("%c %c %c %c", &from[0], &from[1], &to[0], &to[1]) != 4) {
+            while ((from[0] = getchar()) != EOF && from[0] != '\n');
             printf("invalid input\n");
         }
 
-        position_set_x(from, position_get_x_(from_x));
-        position_set_y(from, position_get_y_(from_y));
-        position_set_x(to, position_get_x_(to_x));
-        position_set_y(to, position_get_y_(to_y));
+        position_set_x(fromp, position_get_x_(from[0]));
+        position_set_y(fromp, position_get_y_(from[1]));
+        position_set_x(top, position_get_x_(to[0]));
+        position_set_y(top, position_get_y_(to[1]));
 
         piece_t *piece = config_get_piece(config, WHITE, from);
-
         if (piece == NULL) {
             break;
         }
 
-        move_set_from_position(move, from);
-        move_set_to_position(move, to);
+        move_set_from_position(move, fromp);
+        move_set_to_position(move, top);
         move_set_piece_type(move, piece_get_type(piece));
 
         int eval = config_execute_move(config, move);
@@ -69,10 +69,10 @@ int main(int argc, char *argv[]) {
     }
     printf("exit.. (no piece moved)\n");
 
-    position_dtor(from);
-    free(from);
-    position_dtor(to);
-    free(to);
+    position_dtor(fromp);
+    free(fromp);
+    position_dtor(top);
+    free(top);
     move_dtor(move);
     free(move);
     config_dtor(config);

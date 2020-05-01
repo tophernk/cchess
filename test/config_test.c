@@ -11,24 +11,18 @@ static void test_config_add_piece(void **state) {
     config_t *config = config_new();
     config_ctor(config);
 
-    position_t *position = position_new();
-    position_set_x(position, 0);
-    position_set_y(position, 1);
-
     piece_t *piece = NULL;
 
-    piece = config_get_piece(config, WHITE, position);
+    piece = config_get_piece(config, WHITE, "a2");
     assert_null(piece);
 
-    config_add_piece(config, PAWN_W, 0, 1, WHITE, 0);
+    config_add_piece(config, PAWN_W, 0, 6, WHITE, 0);
 
-    piece = config_get_piece(config, WHITE, position);
+    piece = config_get_piece(config, WHITE, "a2");
     assert_non_null(piece);
     assert_int_equal(piece_get_type(piece), PAWN_W);
-    assert_true(position_equal(piece_get_current_position(piece), position));
-
-    position_dtor(position);
-    free(position);
+    assert_int_equal(position_get_x(piece_get_current_position(piece)), 0);
+    assert_int_equal(position_get_y(piece_get_current_position(piece)), 6);
 
     config_dtor(config);
     free(config);
@@ -58,11 +52,7 @@ static void test_config_valid_move_pawn(void **state) {
     config_add_piece(config, PAWN_W, 0, 6, WHITE, 0);
     config_update_available_positions(config);
 
-    position_t *position = position_new();
-    position_set_x(position, 0);
-    position_set_y(position, 6);
-
-    piece_t *piece = config_get_piece(config, WHITE, position);
+    piece_t *piece = config_get_piece(config, WHITE, "a2");
     assert_true(config_valid_move(config, piece, 0, 5));
     assert_true(config_valid_move(config, piece, 0, 4));
 
@@ -70,9 +60,6 @@ static void test_config_valid_move_pawn(void **state) {
     config_update_available_positions(config);
 
     assert_true(config_valid_move(config, piece, 1, 5));
-
-    position_dtor(position);
-    free(position);
 
     config_dtor(config);
     free(config);
@@ -99,23 +86,23 @@ static void test_config_valid_move_en_passant(void **state) {
 
     config_execute_move(config, move);
 
-    position_t *black_position = position_new();
-    position_set_x(black_position, 1);
-    position_set_y(black_position, 4);
-
-    piece_t *piece = config_get_piece(config, BLACK, black_position);
+    piece_t *piece = config_get_piece(config, BLACK, "b4");
     assert_true(config_valid_move(config, piece, 0, 5));
 
     position_t *en_passant_position = position_new();
     position_set_x(en_passant_position, 0);
     position_set_y(en_passant_position, 5);
 
+    position_t *black_position = position_new();
+    position_set_x(black_position, 1);
+    position_set_y(black_position, 4);
+
     move_set_from_position(move, black_position);
     move_set_to_position(move, en_passant_position);
     move_set_piece_type(move, PAWN_B);
     config_execute_move(config, move);
 
-    piece = config_get_piece(config, WHITE, to_position);
+    piece = config_get_piece(config, WHITE, "a4");
     assert_null(piece);
 
     position_dtor(from_position);
@@ -189,7 +176,7 @@ static void test_config_short_castle(void **state) {
     position_set_x(castle_position, 6);
     position_set_y(castle_position, 7);
 
-    piece_t *piece = config_get_piece(config, WHITE, king_position);
+    piece_t *piece = config_get_piece(config, WHITE, "e1");
     assert_true(config_valid_move(config, piece, 6, 7));
 
     move_t *move = move_new();
@@ -200,22 +187,16 @@ static void test_config_short_castle(void **state) {
 
     config_execute_move(config, move);
 
-    position_t *expected_rook_position = position_new();
-    position_set_x(expected_rook_position, 5);
-    position_set_y(expected_rook_position, 7);
-
-    piece = config_get_piece(config, WHITE, expected_rook_position);
+    piece = config_get_piece(config, WHITE, "f1");
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
     position_dtor(king_position);
     position_dtor(castle_position);
-    position_dtor(expected_rook_position);
     move_dtor(move);
     config_dtor(config);
     free(king_position);
     free(castle_position);
-    free(expected_rook_position);
     free(move);
     free(config);
 }
@@ -233,7 +214,7 @@ static void test_config_long_castle(void **state) {
     position_set_x(castle_position, 2);
     position_set_y(castle_position, 7);
 
-    piece_t *piece = config_get_piece(config, WHITE, king_position);
+    piece_t *piece = config_get_piece(config, WHITE, "e1");
     assert_true(config_valid_move(config, piece, 2, 7));
 
     move_t *move = move_new();
@@ -244,22 +225,16 @@ static void test_config_long_castle(void **state) {
 
     config_execute_move(config, move);
 
-    position_t *expected_rook_position = position_new();
-    position_set_x(expected_rook_position, 3);
-    position_set_y(expected_rook_position, 7);
-
-    piece = config_get_piece(config, WHITE, expected_rook_position);
+    piece = config_get_piece(config, WHITE, "d1");
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
     position_dtor(king_position);
     position_dtor(castle_position);
-    position_dtor(expected_rook_position);
     move_dtor(move);
     config_dtor(config);
     free(king_position);
     free(castle_position);
-    free(expected_rook_position);
     free(move);
     free(config);
 }

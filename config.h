@@ -24,7 +24,7 @@ int config_eval(config_t *config, piece_color_t color);
 
 void config_update_available_positions(config_t *);
 
-piece_t *config_get_piece(config_t *, piece_color_t, position_t *);
+piece_t *config_get_piece(config_t *, piece_color_t, char position[2]);
 
 void config_add_piece(config_t *, piece_type_t, int x, int y, piece_color_t, int index);
 
