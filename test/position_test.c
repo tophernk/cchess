@@ -111,6 +111,26 @@ static void test_position_copy(void **state) {
     free(copy);
 }
 
+static void test_position_get_x_from_file(void **state) {
+    assert_int_equal(position_get_x_('a'), 0);
+    assert_int_equal(position_get_x_('h'), 7);
+}
+
+static void test_position_get_y_from_rank(void **state) {
+    assert_int_equal(position_get_y_('1'), 7);
+    assert_int_equal(position_get_y_('8'), 0);
+}
+
+static void test_position_get_file_from_x(void **state) {
+    assert_int_equal(position_get_file(0), 'a');
+    assert_int_equal(position_get_file(7), 'h');
+}
+
+static void test_position_get_rank_from_y(void **state) {
+    assert_int_equal(position_get_rank(7), '1');
+    assert_int_equal(position_get_rank(0), '8');
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_position_ctor),
@@ -119,6 +139,10 @@ int main(void) {
             cmocka_unit_test(test_position_valid),
             cmocka_unit_test(test_position_invalidate),
             cmocka_unit_test(test_position_equal),
+            cmocka_unit_test(test_position_get_x_from_file),
+            cmocka_unit_test(test_position_get_y_from_rank),
+            cmocka_unit_test(test_position_get_file_from_x),
+            cmocka_unit_test(test_position_get_rank_from_y),
             cmocka_unit_test(test_position_copy)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
