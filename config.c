@@ -527,9 +527,8 @@ int config_execute_move(config_t *conf, move_t *move) {
             }
             piece_type_t type = piece_get_type(piece);
             if (valid_move == 2) {
-                int en_passant_rank = piece_get_color(type) == WHITE ? 5 : 2;
-                conf->enpassant[0] = xto + FILE_OFFSET;
-                conf->enpassant[1] = (en_passant_rank - BOARD_SIZE) * -1 + '0';
+                conf->enpassant[0] = position_get_file(xto);
+                conf->enpassant[1] = position_get_rank(piece_get_color(type) == WHITE ? 5 : 2);
             } else {
                 conf->enpassant[0] = '-';
                 conf->enpassant[1] = '-';

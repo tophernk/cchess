@@ -27,18 +27,17 @@ int main(int argc, char *argv[]) {
 
     int pieceMoved = 1;
     while (pieceMoved) {
-        char from_x, to_x;
-        int from_y, to_y;
+        char from_x, to_x, from_y, to_y;
 
-        while (scanf("%c %d %c %d", &from_x, &from_y, &to_x, &to_y) != 4) {
+        while (scanf("%c %c %c %c", &from_x, &from_y, &to_x, &to_y) != 4) {
             while ((from_x = getchar()) != EOF && from_x != '\n');
             printf("invalid input\n");
         }
 
-        position_set_x(from, from_x - FILE_OFFSET);
-        position_set_y(from, (from_y - BOARD_SIZE) * -1);
-        position_set_x(to, to_x - FILE_OFFSET);
-        position_set_y(to, (to_y - BOARD_SIZE) * -1);
+        position_set_x(from, position_get_x_(from_x));
+        position_set_y(from, position_get_y_(from_y));
+        position_set_x(to, position_get_x_(to_x));
+        position_set_y(to, position_get_y_(to_y));
 
         piece_t *piece = config_get_piece(config, WHITE, from);
 
