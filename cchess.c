@@ -4,18 +4,6 @@
 #include "config.h"
 #include "logger.h"
 
-void cchess_init(config_t *config) {
-    config_add_piece(config, PAWN_W, 1, 6, WHITE, 0);
-    config_add_piece(config, BISHOP_W, 2, 7, WHITE, 1);
-    config_add_piece(config, KING_W, 4, 7, WHITE, 2);
-    config_add_piece(config, BISHOP_W, 5, 7, WHITE, 3);
-    config_add_piece(config, PAWN_B, 0, 1, BLACK, 0);
-    config_add_piece(config, KNIGHT_B, 1, 0, BLACK, 1);
-    config_add_piece(config, KING_B, 4, 0, BLACK, 2);
-
-    config_update_available_positions(config);
-}
-
 int main(int argc, char *argv[]) {
     srand(0);
     remove(CCHESS_LOG);
@@ -25,7 +13,7 @@ int main(int argc, char *argv[]) {
         config_fen_in(config, argv[1]);
     } else {
         config_ctor(config);
-        cchess_init(config);
+        config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
     }
     config_print(config);
 

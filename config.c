@@ -743,6 +743,11 @@ piece_t *config_get_piece(config_t *config, piece_color_t color, position_t *pos
 
 void config_copy(config_t *src, config_t *dst) {
     dst->check_white = src->check_white;
+    dst->short_castles_white = src->short_castles_white;
+    dst->long_castles_white = src->long_castles_white;
+    dst->short_castles_black = src->short_castles_black;
+    dst->long_castles_black = src->long_castles_black;
+
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
             dst->board[x][y] = src->board[x][y];

@@ -5,6 +5,7 @@
 #include <cmocka.h>
 
 #include "config.h"
+#include "config_p.h"
 
 static void test_config_add_piece(void **state) {
     config_t *config = config_new();
@@ -145,13 +146,38 @@ void test_config_cpu_move(void **state) {
     free(config);
 }
 
+void test_config_en_passant_from_standard_starting_position(void **state) {
+    config_t *config = config_new();
+    // a3 has been played
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
+
+    int piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
+
+    config_dtor(config);
+    free(config);
+}
+
 static void test_config_copy(void **state) {
     config_t *config = config_new();
     config_ctor(config);
     config_t *copy = config_new();
     config_ctor(copy);
 
+    config_enable_short_castles(config, BLACK);
+    config_enable_long_castles(config, BLACK);
+    config_enable_short_castles(config, WHITE);
+    config_enable_long_castles(config, WHITE);
+
     config_copy(config, copy);
+
+    assert_int_equal(config->check_black, copy->check_black);
+    assert_int_equal(config->check_white, copy->check_white);
+    assert_int_equal(config->short_castles_black, copy->short_castles_black);
+    assert_int_equal(config->short_castles_white, copy->short_castles_white);
+    assert_int_equal(config->long_castles_black, copy->long_castles_black);
+    assert_int_equal(config->long_castles_white, copy->long_castles_white);
+    assert_memory_equal(config->board, copy->board, sizeof(BOARD_SIZE * 2 * sizeof(piece_type_t)));
 
     config_dtor(copy);
     free(copy);
@@ -254,6 +280,7 @@ int main(void) {
             cmocka_unit_test(test_config_valid_move_pawn),
             cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_valid_move_en_passant),
+            cmocka_unit_test(test_config_en_passant_from_standard_starting_position),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_cpu_move)
