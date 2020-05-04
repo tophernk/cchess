@@ -33,4 +33,6 @@ char position_get_file(int x);
 
 char position_get_rank(int y);
 
+void position_init(char*);
+
 #endif //CCHESS_POSITION_H

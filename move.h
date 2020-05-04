@@ -13,11 +13,11 @@ void move_dtor(move_t *);
 
 position_t *move_get_to_position(move_t *);
 
-position_t *move_get_from_position(move_t *);
+char *move_get_from_position(move_t *);
 
 void move_set_score(move_t *move, int score);
 
-void move_set_from_position(move_t *move, position_t *position);
+void move_set_from_position(move_t *move, char *);
 
 void move_set_to_position(move_t *move, position_t *position);
 

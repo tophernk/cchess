@@ -18,8 +18,6 @@ int main(int argc, char *argv[]) {
 
     config_print(config);
 
-    position_t *fromp = position_new();
-    position_ctor(fromp);
     position_t *top = position_new();
     position_ctor(top);
 
@@ -35,8 +33,6 @@ int main(int argc, char *argv[]) {
             printf("invalid input\n");
         }
 
-        position_set_x(fromp, position_get_x_(from[0]));
-        position_set_y(fromp, position_get_y_(from[1]));
         position_set_x(top, position_get_x_(to[0]));
         position_set_y(top, position_get_y_(to[1]));
 
@@ -45,7 +41,7 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        move_set_from_position(move, fromp);
+        move_set_from_position(move, from);
         move_set_to_position(move, top);
         move_set_piece_type(move, piece_get_type(piece));
 
@@ -69,8 +65,6 @@ int main(int argc, char *argv[]) {
     }
     printf("exit.. (no piece moved)\n");
 
-    position_dtor(fromp);
-    free(fromp);
     position_dtor(top);
     free(top);
     move_dtor(move);

@@ -67,3 +67,8 @@ char position_get_file(int x) {
 char position_get_rank(int y) {
     return y * -1 + '8';
 }
+
+void position_init(char *position) {
+    position[0] = '-';
+    position[1] = '-';
+}

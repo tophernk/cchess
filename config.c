@@ -240,7 +240,13 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                 position_t *available_position = piece_get_available_position(piece_to_move, x);
                 if (position_get_x(available_position) != -1) {
                     move_set_piece_type(move, piece_get_type(piece_to_move));
-                    move_set_from_position(move, piece_get_current_position(piece_to_move));
+                    position_t *pPosition = piece_get_current_position(piece_to_move);
+
+                    char pos[2];
+                    pos[0] = position_get_file(position_get_x(pPosition));
+                    pos[1] = position_get_rank(position_get_y(pPosition));
+
+                    move_set_from_position(move, pos);
                     move_set_to_position(move, available_position);
                     int score = config_execute_move(tmp_conf, move);
 
@@ -499,7 +505,7 @@ int __abs(int x) {
 }
 
 int config_execute_move(config_t *conf, move_t *move) {
-    position_t *from = move_get_from_position(move);
+    char *from = move_get_from_position(move);
     position_t *to = move_get_to_position(move);
 
     config_t *backup_config = config_new();
@@ -512,14 +518,10 @@ int config_execute_move(config_t *conf, move_t *move) {
 
     if (from != NULL && to != NULL) {
         piece_color_t move_color = piece_get_color(move_get_piece_type(move));
-        char p_pos[2];
-        p_pos[0] = position_get_file(position_get_x(from));
-        p_pos[1] = position_get_rank(position_get_y(from));
-        piece_t *piece = config_get_piece(conf, move_color, p_pos);
+        piece_t *piece = config_get_piece(conf, move_color, from);
         int valid_move = config_valid_move(conf, piece, position_get_x(to), position_get_y(to));
         if (valid_move) {
-            int xfrom = position_get_x(from);
-            conf->board[xfrom][position_get_y(from)] = NONE;
+            conf->board[position_get_x_(from[0])][position_get_y_(from[1])] = NONE;
 
             int xto = position_get_x(to);
             int yto = position_get_y(to);
@@ -542,7 +544,7 @@ int config_execute_move(config_t *conf, move_t *move) {
             if (valid_move == 5 || valid_move == 6) {
                 __castle_rook_move(conf, move_color, 0, 3);
             }
-            __config_update_castle_flags(conf, xfrom, &type);
+            __config_update_castle_flags(conf, position_get_x_(from[0]), &type);
 
             piece_set_current_position(piece, xto, yto);
             conf->board[xto][yto] = type;
@@ -680,13 +682,9 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
     }
 
     move_t *node_to_play = best_path[0];
-    position_t *pPosition = move_get_from_position(node_to_play);
-    char pos[2];
-    pos[0] = position_get_file(position_get_x(pPosition));
-    pos[1] = position_get_rank(position_get_y(pPosition));
-    piece_t *piece_to_move = config_get_piece(conf, BLACK, pos);
+    piece_t *piece_to_move = config_get_piece(conf, BLACK, move_get_from_position(node_to_play));
     move_set_piece_type(calculated_move, piece_get_type(piece_to_move));
-    move_set_from_position(calculated_move, pPosition);
+    move_set_from_position(calculated_move, move_get_from_position(node_to_play));
     move_set_to_position(calculated_move, move_get_to_position(node_to_play));
     move_set_score(calculated_move, move_get_score(node_to_play));
 
