@@ -238,6 +238,9 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
             for (int x = 0; x < MAX_POSITIONS; x++) {
                 piece_t *piece_to_move = color_to_move == WHITE ? tmp_conf->white[i] : tmp_conf->black[i];
                 position_t *available_position = piece_get_available_position(piece_to_move, x);
+                char ava_pos[2];
+                ava_pos[0] = position_get_file(position_get_x(available_position));
+                ava_pos[1] = position_get_rank(position_get_y(available_position));
                 if (position_get_x(available_position) != -1) {
                     move_set_piece_type(move, piece_get_type(piece_to_move));
                     position_t *pPosition = piece_get_current_position(piece_to_move);
@@ -247,7 +250,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                     pos[1] = position_get_rank(position_get_y(pPosition));
 
                     move_set_from_position(move, pos);
-                    move_set_to_position(move, available_position);
+                    move_set_to_position(move, ava_pos);
                     int score = config_execute_move(tmp_conf, move);
 
                     move_t *current_path_node = current_path[current_depth];
@@ -259,6 +262,8 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                     __execute_all_moves(tmp_conf, color_to_move == WHITE ? BLACK : WHITE, best_path, current_path, current_depth + 1);
 
                     config_copy(config, tmp_conf);
+                } else {
+                    break;
                 }
             }
         }
@@ -506,7 +511,7 @@ int __abs(int x) {
 
 int config_execute_move(config_t *conf, move_t *move) {
     char *from = move_get_from_position(move);
-    position_t *to = move_get_to_position(move);
+    char *to = move_get_to_position(move);
 
     config_t *backup_config = config_new();
     config_ctor(backup_config);
@@ -519,13 +524,13 @@ int config_execute_move(config_t *conf, move_t *move) {
     if (from != NULL && to != NULL) {
         piece_color_t move_color = piece_get_color(move_get_piece_type(move));
         piece_t *piece = config_get_piece(conf, move_color, from);
-        int valid_move = config_valid_move(conf, piece, position_get_x(to), position_get_y(to));
+        int valid_move = config_valid_move(conf, piece, position_get_x_(to[0]), position_get_y_(to[1]));
         if (valid_move) {
             conf->board[position_get_x_(from[0])][position_get_y_(from[1])] = NONE;
 
-            int xto = position_get_x(to);
-            int yto = position_get_y(to);
-            if (conf->board[xto][yto] > NONE) {
+            int xto = position_get_x_(to[0]);
+            int yto = position_get_y_(to[1]);
+            if (conf->board[xto][yto] != NONE) {
                 config_remove_piece(conf, to);
             } else if (config_en_passant(conf, xto, yto) && __is_pawn(piece)) {
                 __move_en_passant(conf, piece, xto);
@@ -607,13 +612,13 @@ void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int x
 
 void __move_en_passant(config_t *conf, piece_t *piece, int xto) {
     int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
-    position_t *en_passant_piece_position = position_new();
-    position_set_x(en_passant_piece_position, xto);
-    position_set_y(en_passant_piece_position, en_passant_piece_rank);
+
+    char en_passant_piece_position[2];
+    en_passant_piece_position[0] = position_get_file(xto);
+    en_passant_piece_position[1] = position_get_rank(en_passant_piece_rank);
+
     config_remove_piece(conf, en_passant_piece_position);
     conf->board[xto][en_passant_piece_rank] = NONE;
-    position_dtor(en_passant_piece_position);
-    free(en_passant_piece_position);
 }
 
 bool __is_pawn(piece_t *piece) {
@@ -621,9 +626,9 @@ bool __is_pawn(piece_t *piece) {
     return type == PAWN_B || type == PAWN_W;
 }
 
-void config_remove_piece(config_t *cfg, position_t *position) {
-    int x = position_get_x(position);
-    int y = position_get_y(position);
+void config_remove_piece(config_t *cfg, char *position) {
+    int x = position_get_x_(position[0]);
+    int y = position_get_y_(position[1]);
     piece_type_t piece_type = cfg->board[x][y];
     piece_t **piece = NULL;
     if (piece_type < 7) {
@@ -631,10 +636,16 @@ void config_remove_piece(config_t *cfg, position_t *position) {
     } else {
         piece = cfg->black;
     }
-    while (!position_equal(piece_get_current_position(*piece), position)) {
+    position_t *pPosition = piece_get_current_position(*piece);
+    char file = position_get_file(position_get_x(pPosition));
+    char rank = position_get_rank(position_get_y(pPosition));
+    while (file != position[0] || rank != position[1]) {
         piece++;
+        pPosition = piece_get_current_position(*piece);
+        file = position_get_file(position_get_x(pPosition));
+        rank = position_get_rank(position_get_y(pPosition));
     }
-    position_invalidate(piece_get_current_position(*piece));
+    position_invalidate(pPosition);
     piece_set_type(*piece, NONE);
 
     for (int i = 0; i < MAX_POSITIONS; i++) {
@@ -708,7 +719,11 @@ int config_move_available(config_t *config, piece_color_t color) {
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         if (piece_get_type(piece[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
-                if (position_valid(piece_get_available_position(piece[i], x))) {
+                position_t *pPosition = piece_get_available_position(piece[i], x);
+                char pos[2];
+                pos[0] = position_get_file(position_get_x(pPosition));
+                pos[1] = position_get_rank(position_get_y(pPosition));
+                if (position_valid(pos)) {
                     return 1;
                 }
             }

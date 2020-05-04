@@ -27,8 +27,8 @@ int position_equal(position_t *a, position_t *b) {
     return a->x == b->x && a->y == b->y;
 }
 
-int position_valid(position_t *position) {
-    return position->x != -1 && position->y != -1;
+int position_valid(char *position) {
+    return position[0] != '-' && position[1] != '-';
 }
 
 int position_get_x(position_t *position) {

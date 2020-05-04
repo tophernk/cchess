@@ -21,7 +21,7 @@ void position_set_y(position_t *, int y);
 
 int position_equal(position_t *, position_t *);
 
-int position_valid(position_t *);
+int position_valid(char *);
 
 void position_invalidate(position_t *position);
 
@@ -33,6 +33,6 @@ char position_get_file(int x);
 
 char position_get_rank(int y);
 
-void position_init(char*);
+void position_init(char *);
 
 #endif //CCHESS_POSITION_H

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "cchess.h"
 #include "config.h"
 #include "logger.h"
 
@@ -18,9 +17,6 @@ int main(int argc, char *argv[]) {
 
     config_print(config);
 
-    position_t *top = position_new();
-    position_ctor(top);
-
     move_t *move = move_new();
     move_ctor(move);
     char from[2];
@@ -33,16 +29,13 @@ int main(int argc, char *argv[]) {
             printf("invalid input\n");
         }
 
-        position_set_x(top, position_get_x_(to[0]));
-        position_set_y(top, position_get_y_(to[1]));
-
         piece_t *piece = config_get_piece(config, WHITE, from);
         if (piece == NULL) {
             break;
         }
 
         move_set_from_position(move, from);
-        move_set_to_position(move, top);
+        move_set_to_position(move, to);
         move_set_piece_type(move, piece_get_type(piece));
 
         int eval = config_execute_move(config, move);
@@ -65,8 +58,6 @@ int main(int argc, char *argv[]) {
     }
     printf("exit.. (no piece moved)\n");
 
-    position_dtor(top);
-    free(top);
     move_dtor(move);
     free(move);
     config_dtor(config);

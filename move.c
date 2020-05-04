@@ -3,7 +3,6 @@
 #include "logger.h"
 
 struct move {
-    position_t *to_position;
     char from[2];
     char to[2];
     piece_type_t piece_type;
@@ -20,23 +19,18 @@ void move_ctor(move_t *move) {
     move->piece_type = NONE;
     position_init(move->from);
     position_init(move->to);
-    move->to_position = position_new();
-    position_ctor(move->to_position);
     move->score = -9999;
 }
 
 void move_dtor(move_t *move) {
-    position_dtor(move->to_position);
-    free(move->to_position);
 }
 
-void move_set_to_position(move_t *move, position_t *position) {
-    position_copy(position, move->to_position);
-    move->to[0] = position_get_file(position_get_x(position));
-    move->to[1] = position_get_rank(position_get_y(position));
+void move_set_to_position(move_t *move, const char *position) {
+    move->to[0] = position[0];
+    move->to[1] = position[1];
 }
 
-void move_set_from_position(move_t *move, char *position) {
+void move_set_from_position(move_t *move, const char *position) {
     move->from[0] = position[0];
     move->from[1] = position[1];
 }
@@ -46,8 +40,7 @@ void move_print(move_t **path, int size) {
         move_t *node = path[i];
         if (node->piece_type > NONE) {
             cchess_log("(%c_%c:%c%d=%d) -> ", piece_type_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B',
-                       position_get_x(node->to_position) + 'a', 8 - position_get_y(node->to_position),
-                       node->score);
+                       position_get_file(node->to[0]), position_get_rank(node->to[1]), node->score);
         }
     }
     cchess_log("<END>\n");
@@ -61,8 +54,8 @@ int move_get_score(move_t *move) {
     return move->score;
 }
 
-position_t *move_get_to_position(move_t *move) {
-    return move->to_position;
+char *move_get_to_position(move_t *move) {
+    return move->to;
 }
 
 char *move_get_from_position(move_t *move) {

@@ -70,14 +70,10 @@ static void test_config_valid_move_en_passant(void **state) {
     char *fen = "8/8/8/8/1p6/8/P7/8 w - - 0 0";
     config_fen_in(config, fen);
 
-    position_t *to_position = position_new();
-    position_set_x(to_position, 0);
-    position_set_y(to_position, 4);
-
     move_t *move = move_new();
     move_ctor(move);
     move_set_from_position(move, "a2");
-    move_set_to_position(move, to_position);
+    move_set_to_position(move, "a4");
     move_set_piece_type(move, PAWN_W);
 
     config_execute_move(config, move);
@@ -85,22 +81,13 @@ static void test_config_valid_move_en_passant(void **state) {
     piece_t *piece = config_get_piece(config, BLACK, "b4");
     assert_true(config_valid_move(config, piece, 0, 5));
 
-    position_t *en_passant_position = position_new();
-    position_set_x(en_passant_position, 0);
-    position_set_y(en_passant_position, 5);
-
     move_set_from_position(move, "b4");
-    move_set_to_position(move, en_passant_position);
+    move_set_to_position(move, "a3");
     move_set_piece_type(move, PAWN_B);
     config_execute_move(config, move);
 
     piece = config_get_piece(config, WHITE, "a4");
     assert_null(piece);
-
-    position_dtor(to_position);
-    position_dtor(en_passant_position);
-    free(to_position);
-    free(en_passant_position);
 
     move_dtor(move);
     free(move);
@@ -156,17 +143,13 @@ static void test_config_short_castle(void **state) {
     char *fen = "8/1p6/8/8/8/8/8/4K2R w K - 0 0";
     config_fen_in(config, fen);
 
-    position_t *castle_position = position_new();
-    position_set_x(castle_position, 6);
-    position_set_y(castle_position, 7);
-
     piece_t *piece = config_get_piece(config, WHITE, "e1");
     assert_true(config_valid_move(config, piece, 6, 7));
 
     move_t *move = move_new();
     move_ctor(move);
     move_set_from_position(move, "e1");
-    move_set_to_position(move, castle_position);
+    move_set_to_position(move, "g1");
     move_set_piece_type(move, KING_W);
 
     config_execute_move(config, move);
@@ -175,10 +158,8 @@ static void test_config_short_castle(void **state) {
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
-    position_dtor(castle_position);
     move_dtor(move);
     config_dtor(config);
-    free(castle_position);
     free(move);
     free(config);
 }
@@ -188,17 +169,13 @@ static void test_config_long_castle(void **state) {
     char *fen = "8/1p6/8/8/8/8/8/R3K3 w Q - 0 0";
     config_fen_in(config, fen);
 
-    position_t *castle_position = position_new();
-    position_set_x(castle_position, 2);
-    position_set_y(castle_position, 7);
-
     piece_t *piece = config_get_piece(config, WHITE, "e1");
     assert_true(config_valid_move(config, piece, 2, 7));
 
     move_t *move = move_new();
     move_ctor(move);
     move_set_from_position(move, "e1");
-    move_set_to_position(move, castle_position);
+    move_set_to_position(move, "c1");
     move_set_piece_type(move, KING_W);
 
     config_execute_move(config, move);
@@ -207,10 +184,8 @@ static void test_config_long_castle(void **state) {
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
-    position_dtor(castle_position);
     move_dtor(move);
     config_dtor(config);
-    free(castle_position);
     free(move);
     free(config);
 }
@@ -235,14 +210,10 @@ void test_config_multiple_cpu_moves(void **state) {
     int piece_moved = config_move_cpu(config);
     assert_true(piece_moved);
 
-    position_t *to_position = position_new();
-    position_set_x(to_position, 0);
-    position_set_y(to_position, 4);
-
     move_t *move = move_new();
     move_ctor(move);
     move_set_from_position(move, "a3");
-    move_set_to_position(move, to_position);
+    move_set_to_position(move, "a4");
     move_set_piece_type(move, PAWN_W);
 
     piece_moved = config_execute_move(config, move);
@@ -256,8 +227,6 @@ void test_config_multiple_cpu_moves(void **state) {
     assert_true(piece_moved);
     assert_memory_not_equal(config->board, copy->board, 2 * BOARD_SIZE * sizeof(piece_type_t));
 
-    position_dtor(to_position);
-    free(to_position);
     move_dtor(move);
     free(move);
     config_dtor(copy);
