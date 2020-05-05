@@ -273,8 +273,8 @@ int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     int result = 0;
     piece_type_t piece_at_from_position = piece_get_type(piece);
     char *from_position = piece_get_current_position(piece);
-    int xfrom = position_get_x_(from_position[0]);
-    int yfrom = position_get_y_(from_position[1]);
+    int xfrom = position_get_x(from_position[0]);
+    int yfrom = position_get_y(from_position[1]);
 
     piece_type_t piece_at_to_position = conf->board[xto][yto];
     if (piece_at_to_position > NONE) {
@@ -364,7 +364,7 @@ bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *
         piece_t *current_attacker = attackers[i];
         for (int ii = 0; ii < MAX_POSITIONS; ii++) {
             char *position = piece_get_available_position(current_attacker, ii);
-            if (position_get_x_(position[0]) == x && position_get_y_(position[1]) == y) {
+            if (position_get_x(position[0]) == x && position_get_y(position[1]) == y) {
                 return true;
             }
         }
@@ -513,12 +513,12 @@ int config_execute_move(config_t *conf, move_t *move) {
     if (*from != '-' && *to != '-') {
         piece_color_t move_color = piece_get_color(move_get_piece_type(move));
         piece_t *piece = config_get_piece(conf, move_color, from);
-        int valid_move = config_valid_move(conf, piece, position_get_x_(to[0]), position_get_y_(to[1]));
+        int valid_move = config_valid_move(conf, piece, position_get_x(to[0]), position_get_y(to[1]));
         if (valid_move) {
-            conf->board[position_get_x_(from[0])][position_get_y_(from[1])] = NONE;
+            conf->board[position_get_x(from[0])][position_get_y(from[1])] = NONE;
 
-            int xto = position_get_x_(to[0]);
-            int yto = position_get_y_(to[1]);
+            int xto = position_get_x(to[0]);
+            int yto = position_get_y(to[1]);
             if (conf->board[xto][yto] != NONE) {
                 config_remove_piece(conf, to);
             } else if (config_en_passant(conf, xto, yto) && __is_pawn(piece)) {
@@ -538,7 +538,7 @@ int config_execute_move(config_t *conf, move_t *move) {
             if (valid_move == 5 || valid_move == 6) {
                 __castle_rook_move(conf, move_color, 0, 3);
             }
-            __config_update_castle_flags(conf, position_get_x_(from[0]), &type);
+            __config_update_castle_flags(conf, position_get_x(from[0]), &type);
 
             piece_set_current_position(piece, xto, yto);
             conf->board[xto][yto] = type;
@@ -616,8 +616,8 @@ bool __is_pawn(piece_t *piece) {
 }
 
 void config_remove_piece(config_t *cfg, char *position) {
-    int x = position_get_x_(position[0]);
-    int y = position_get_y_(position[1]);
+    int x = position_get_x(position[0]);
+    int y = position_get_y(position[1]);
     piece_type_t piece_type = cfg->board[x][y];
     piece_t **piece = NULL;
     if (piece_type < 7) {
@@ -630,7 +630,7 @@ void config_remove_piece(config_t *cfg, char *position) {
         piece++;
         currentPosition = piece_get_current_position(*piece);
     }
-    position_init(currentPosition);
+    position_invalidate(currentPosition);
     piece_set_type(*piece, NONE);
     piece_invalidate_available_positions(*piece);
 }

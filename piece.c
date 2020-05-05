@@ -28,7 +28,7 @@ piece_t *piece_new() {
 void piece_ctor(piece_t *piece) {
     piece->type = NONE;
     piece_invalidate_available_positions(piece);
-    position_init(piece->current_pos);
+    position_invalidate(piece->current_pos);
 }
 
 void piece_dtor(piece_t *piece) {

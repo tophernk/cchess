@@ -17,8 +17,8 @@ move_t *move_new() {
 
 void move_ctor(move_t *move) {
     move->piece_type = NONE;
-    position_init(move->from);
-    position_init(move->to);
+    position_invalidate(move->from);
+    position_invalidate(move->to);
     move->score = -9999;
 }
 
