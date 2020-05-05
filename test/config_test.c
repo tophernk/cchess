@@ -21,8 +21,7 @@ static void test_config_add_piece(void **state) {
     piece = config_get_piece(config, WHITE, "a2");
     assert_non_null(piece);
     assert_int_equal(piece_get_type(piece), PAWN_W);
-    assert_int_equal(position_get_x(piece_get_current_position(piece)), 0);
-    assert_int_equal(position_get_y(piece_get_current_position(piece)), 6);
+    assert_memory_equal(piece_get_current_position(piece), "a2", 2);
 
     config_dtor(config);
     free(config);

@@ -62,21 +62,10 @@ static void test_position_equal(void **state) {
 }
 
 static void test_position_valid(void **state) {
-    position_t *position = position_new();
-    position_ctor(position);
-    assert_false(position_valid(position));
-
-    position_set_x(position, 1);
-    assert_false(position_valid(position));
-
-    position_set_y(position, 1);
-    assert_true(position_valid(position));
-
-    position_set_y(position, -1);
-    assert_false(position_valid(position));
-
-    position_dtor(position);
-    free(position);
+    assert_false(position_valid("--"));
+    assert_false(position_valid("a-"));
+    assert_false(position_valid("-1"));
+    assert_true(position_valid("a1"));
 }
 
 static void test_position_invalidate(void **state) {

@@ -52,7 +52,7 @@ void piece_invalidate_available_positions(piece_t *);
 
 void piece_set_current_position(piece_t *, int x, int y);
 
-position_t *piece_get_current_position(piece_t *);
+char *piece_get_current_position(piece_t *);
 
 void piece_set_available_position(piece_t *, int x, int y, int index);
 

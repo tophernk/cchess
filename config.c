@@ -243,13 +243,9 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                 ava_pos[1] = position_get_rank(position_get_y(available_position));
                 if (position_get_x(available_position) != -1) {
                     move_set_piece_type(move, piece_get_type(piece_to_move));
-                    position_t *pPosition = piece_get_current_position(piece_to_move);
+                    char *currentPosition = piece_get_current_position(piece_to_move);
 
-                    char pos[2];
-                    pos[0] = position_get_file(position_get_x(pPosition));
-                    pos[1] = position_get_rank(position_get_y(pPosition));
-
-                    move_set_from_position(move, pos);
+                    move_set_from_position(move, currentPosition);
                     move_set_to_position(move, ava_pos);
                     int score = config_execute_move(tmp_conf, move);
 
@@ -279,9 +275,9 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
 int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
     int result = 0;
     piece_type_t piece_at_from_position = piece_get_type(piece);
-    position_t *from_position = piece_get_current_position(piece);
-    int xfrom = position_get_x(from_position);
-    int yfrom = position_get_y(from_position);
+    char *from_position = piece_get_current_position(piece);
+    int xfrom = position_get_x_(from_position[0]);
+    int yfrom = position_get_y_(from_position[1]);
 
     piece_type_t piece_at_to_position = conf->board[xto][yto];
     if (piece_at_to_position > NONE) {
@@ -604,8 +600,8 @@ void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int x
     position[1] = position_get_rank(y);
     piece_t *pPiece = config_get_piece(pConfig, color, position);
 
-    position_t *rook_position = piece_get_current_position(pPiece);
-    position_set_x(rook_position, xto);
+    char *rook_position = piece_get_current_position(pPiece);
+    rook_position[0] = position_get_file(xto);
     pConfig->board[xfrom][y] = NONE;
     pConfig->board[xto][y] = color == BLACK ? ROOK_B : ROOK_W;
 }
@@ -636,16 +632,12 @@ void config_remove_piece(config_t *cfg, char *position) {
     } else {
         piece = cfg->black;
     }
-    position_t *pPosition = piece_get_current_position(*piece);
-    char file = position_get_file(position_get_x(pPosition));
-    char rank = position_get_rank(position_get_y(pPosition));
-    while (file != position[0] || rank != position[1]) {
+    char *currentPosition = piece_get_current_position(*piece);
+    while (currentPosition[0] != position[0] || currentPosition[1] != position[1]) {
         piece++;
-        pPosition = piece_get_current_position(*piece);
-        file = position_get_file(position_get_x(pPosition));
-        rank = position_get_rank(position_get_y(pPosition));
+        currentPosition = piece_get_current_position(*piece);
     }
-    position_invalidate(pPosition);
+    *currentPosition = "--";
     piece_set_type(*piece, NONE);
 
     for (int i = 0; i < MAX_POSITIONS; i++) {
@@ -735,8 +727,8 @@ int config_move_available(config_t *config, piece_color_t color) {
 piece_t *config_get_piece(config_t *config, piece_color_t color, char position[2]) {
     piece_t **pieces = color == WHITE ? config->white : config->black;
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        if (position_get_x(piece_get_current_position(pieces[i])) == position_get_x_(position[0])
-            && position_get_y(piece_get_current_position(pieces[i])) == position_get_y_(position[1])) {
+        char *currentPosition = piece_get_current_position(pieces[i]);
+        if (currentPosition[0] == position[0] && currentPosition[1] == position[1]) {
             return pieces[i];
         }
     }

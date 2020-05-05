@@ -5,6 +5,7 @@ struct piece {
     piece_type_t type;
     position_t *current_position;
     position_t *available_positions[MAX_POSITIONS];
+    char current_pos[2];
 };
 
 int is_white_piece(piece_type_t type) {
@@ -33,6 +34,7 @@ void piece_ctor(piece_t *piece) {
         piece->available_positions[i] = position_new();
         position_ctor(piece->available_positions[i]);
     }
+    position_init(piece->current_pos);
 }
 
 void piece_dtor(piece_t *piece) {
@@ -72,7 +74,7 @@ int piece_type_get_weight(piece_type_t type) {
         case KING_B:
             return 20;
         default:
-            return -1;
+            return 0;
     }
 }
 
@@ -144,8 +146,8 @@ void piece_invalidate_available_positions(piece_t *piece) {
     }
 }
 
-position_t *piece_get_current_position(piece_t *piece) {
-    return piece->current_position;
+char *piece_get_current_position(piece_t *piece) {
+    return piece->current_pos;
 }
 
 void piece_set_available_position(piece_t *piece, int x, int y, int index) {
@@ -164,6 +166,8 @@ void piece_set_type(piece_t *piece, piece_type_t type) {
 void piece_set_current_position(piece_t *piece, int x, int y) {
     position_set_x(piece->current_position, x);
     position_set_y(piece->current_position, y);
+    piece->current_pos[0] = position_get_file(x);
+    piece->current_pos[1] = position_get_rank(y);
 }
 
 void piece_copy(piece_t *src, piece_t *dst) {
@@ -172,4 +176,6 @@ void piece_copy(piece_t *src, piece_t *dst) {
     for (int i = 0; i < MAX_POSITIONS; i++) {
         position_copy(src->available_positions[i], dst->available_positions[i]);
     }
+    dst->current_pos[0] = src->current_pos[0];
+    dst->current_pos[1] = src->current_pos[1];
 }
