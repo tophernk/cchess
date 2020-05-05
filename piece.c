@@ -3,7 +3,6 @@
 
 struct piece {
     piece_type_t type;
-    position_t *available_positions[MAX_POSITIONS];
     char available_pss[2 * MAX_POSITIONS];
     char current_pos[2];
 };
@@ -28,19 +27,11 @@ piece_t *piece_new() {
 
 void piece_ctor(piece_t *piece) {
     piece->type = NONE;
-    for (int i = 0; i < MAX_POSITIONS; i++) {
-        piece->available_positions[i] = position_new();
-        position_ctor(piece->available_positions[i]);
-    }
     piece_invalidate_available_positions(piece);
     position_init(piece->current_pos);
 }
 
 void piece_dtor(piece_t *piece) {
-    for (int i = 0; i < MAX_POSITIONS; i++) {
-        position_dtor(piece->available_positions[i]);
-        free(piece->available_positions[i]);
-    }
 }
 
 piece_color_t piece_get_color(piece_type_t type) {
@@ -139,7 +130,6 @@ piece_type_t piece_char_to_type(char fenv) {
 
 void piece_invalidate_available_positions(piece_t *piece) {
     for (int i = 0; i < MAX_POSITIONS; i++) {
-        position_invalidate(piece->available_positions[i]);
         piece->available_pss[i * 2] = '-';
         piece->available_pss[i * 2 + 1] = '-';
     }
@@ -150,8 +140,6 @@ char *piece_get_current_position(piece_t *piece) {
 }
 
 void piece_set_available_position(piece_t *piece, int x, int y, int index) {
-    position_set_x(piece->available_positions[index], x);
-    position_set_y(piece->available_positions[index], y);
     piece->available_pss[index * 2] = x != -1 ? position_get_file(x) : '-';
     piece->available_pss[index * 2 + 1] = y != -1 ? position_get_rank(y) : '-';
 }
@@ -172,7 +160,6 @@ void piece_set_current_position(piece_t *piece, int x, int y) {
 void piece_copy(piece_t *src, piece_t *dst) {
     dst->type = src->type;
     for (int i = 0; i < MAX_POSITIONS; i++) {
-        position_copy(src->available_positions[i], dst->available_positions[i]);
         dst->available_pss[i * 2] = src->available_pss[i * 2];
         dst->available_pss[i * 2 + 1] = src->available_pss[i * 2 + 1];
     }
