@@ -17,4 +17,6 @@ char position_get_rank(int y);
 
 void position_invalidate(char *);
 
+void position_set_file_rank(char *, int, int);
+
 #endif //CCHESS_POSITION_H

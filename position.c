@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "position.h"
 
 int position_equal(char *a, char *b) {
@@ -33,4 +32,9 @@ char position_get_rank(int y) {
 void position_invalidate(char *position) {
     position[0] = '-';
     position[1] = '-';
+}
+
+void position_set_file_rank(char*position, int x, int y) {
+    position[0] = position_get_file(x);
+    position[1] = position_get_rank(y);
 }
