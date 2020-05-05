@@ -237,16 +237,13 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
         if (piece_get_type(pieces[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
                 piece_t *piece_to_move = color_to_move == WHITE ? tmp_conf->white[i] : tmp_conf->black[i];
-                position_t *available_position = piece_get_available_position(piece_to_move, x);
-                char ava_pos[2];
-                ava_pos[0] = position_get_file(position_get_x(available_position));
-                ava_pos[1] = position_get_rank(position_get_y(available_position));
-                if (position_get_x(available_position) != -1) {
+                char *available_position = piece_get_available_position(piece_to_move, x);
+                if (*available_position != '-') {
                     move_set_piece_type(move, piece_get_type(piece_to_move));
                     char *currentPosition = piece_get_current_position(piece_to_move);
 
                     move_set_from_position(move, currentPosition);
-                    move_set_to_position(move, ava_pos);
+                    move_set_to_position(move, available_position);
                     int score = config_execute_move(tmp_conf, move);
 
                     move_t *current_path_node = current_path[current_depth];
@@ -363,19 +360,15 @@ bool __field_is_blocked(int x, int y, const config_t *pConfig) {
 
 bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *pConfig) {
     piece_t **attackers = attacking_color == WHITE ? pConfig->white : pConfig->black;
-    position_t *pos_to_check = position_new();
-    position_set_x(pos_to_check, x);
-    position_set_y(pos_to_check, y);
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         piece_t *current_attacker = attackers[i];
         for (int ii = 0; ii < MAX_POSITIONS; ii++) {
-            if (position_equal(pos_to_check, piece_get_available_position(current_attacker, ii))) {
-                free(pos_to_check);
+            char *position = piece_get_available_position(current_attacker, ii);
+            if (position_get_x_(position[0]) == x && position_get_y_(position[1]) == y) {
                 return true;
             }
         }
     }
-    free(pos_to_check);
     return false;
 }
 
@@ -517,7 +510,7 @@ int config_execute_move(config_t *conf, move_t *move) {
     conf->check_white = 0;
     conf->check_black = 0;
 
-    if (from != NULL && to != NULL) {
+    if (*from != '-' && *to != '-') {
         piece_color_t move_color = piece_get_color(move_get_piece_type(move));
         piece_t *piece = config_get_piece(conf, move_color, from);
         int valid_move = config_valid_move(conf, piece, position_get_x_(to[0]), position_get_y_(to[1]));
@@ -637,12 +630,9 @@ void config_remove_piece(config_t *cfg, char *position) {
         piece++;
         currentPosition = piece_get_current_position(*piece);
     }
-    *currentPosition = "--";
+    position_init(currentPosition);
     piece_set_type(*piece, NONE);
-
-    for (int i = 0; i < MAX_POSITIONS; i++) {
-        position_invalidate(piece_get_available_position(*piece, i));
-    }
+    piece_invalidate_available_positions(*piece);
 }
 
 int config_move_cpu(config_t *conf) {
@@ -711,11 +701,7 @@ int config_move_available(config_t *config, piece_color_t color) {
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         if (piece_get_type(piece[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
-                position_t *pPosition = piece_get_available_position(piece[i], x);
-                char pos[2];
-                pos[0] = position_get_file(position_get_x(pPosition));
-                pos[1] = position_get_rank(position_get_y(pPosition));
-                if (position_valid(pos)) {
+                if (position_valid(piece_get_available_position(piece[i], x))) {
                     return 1;
                 }
             }

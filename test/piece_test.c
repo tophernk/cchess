@@ -31,14 +31,14 @@ static void test_piece_copy(void **state) {
     piece_ctor(copy);
 
     assert_int_not_equal(piece_get_type(piece), piece_get_type(copy));
-    assert_false(position_equal(piece_get_current_position(piece), piece_get_current_position(copy)));
-    assert_false(position_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2)));
+    assert_memory_not_equal(piece_get_current_position(piece), piece_get_current_position(copy), 2);
+    assert_memory_not_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2),2);
 
     piece_copy(piece, copy);
 
     assert_int_equal(piece_get_type(piece), piece_get_type(copy));
-    assert_true(position_equal(piece_get_current_position(piece), piece_get_current_position(copy)));
-    assert_true(position_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2)));
+    assert_memory_equal(piece_get_current_position(piece), piece_get_current_position(copy), 2);
+    assert_memory_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2),2);
 
     piece_dtor(piece);
     free(piece);
@@ -65,7 +65,7 @@ static void test_piece_invalidate_available_positions(void **state) {
     }
 
     for (int i = 0; i < MAX_POSITIONS; i++) {
-        piece_set_available_position(piece, i, i, i);
+        piece_set_available_position(piece, 1, 1, i);
     }
 
     for (int i = 0; i < MAX_POSITIONS; i++) {

@@ -56,6 +56,6 @@ char *piece_get_current_position(piece_t *);
 
 void piece_set_available_position(piece_t *, int x, int y, int index);
 
-position_t *piece_get_available_position(piece_t *, int);
+char *piece_get_available_position(piece_t *, int);
 
 #endif //CCHESS_CONFIG_H

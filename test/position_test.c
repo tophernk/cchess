@@ -73,7 +73,7 @@ static void test_position_invalidate(void **state) {
     position_set_x(position, 1);
     position_set_y(position, 1);
     assert_true(position_valid(position));
-    position_invalidate(position);
+    position_init(position);
     assert_false(position_valid(position));
 
     position_dtor(position);
