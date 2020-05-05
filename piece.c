@@ -3,7 +3,6 @@
 
 struct piece {
     piece_type_t type;
-    position_t *current_position;
     position_t *available_positions[MAX_POSITIONS];
     char current_pos[2];
 };
@@ -28,8 +27,6 @@ piece_t *piece_new() {
 
 void piece_ctor(piece_t *piece) {
     piece->type = NONE;
-    piece->current_position = position_new();
-    position_ctor(piece->current_position);
     for (int i = 0; i < MAX_POSITIONS; i++) {
         piece->available_positions[i] = position_new();
         position_ctor(piece->available_positions[i]);
@@ -38,8 +35,6 @@ void piece_ctor(piece_t *piece) {
 }
 
 void piece_dtor(piece_t *piece) {
-    position_dtor(piece->current_position);
-    free(piece->current_position);
     for (int i = 0; i < MAX_POSITIONS; i++) {
         position_dtor(piece->available_positions[i]);
         free(piece->available_positions[i]);
@@ -164,15 +159,12 @@ void piece_set_type(piece_t *piece, piece_type_t type) {
 }
 
 void piece_set_current_position(piece_t *piece, int x, int y) {
-    position_set_x(piece->current_position, x);
-    position_set_y(piece->current_position, y);
     piece->current_pos[0] = position_get_file(x);
     piece->current_pos[1] = position_get_rank(y);
 }
 
 void piece_copy(piece_t *src, piece_t *dst) {
     dst->type = src->type;
-    position_copy(src->current_position, dst->current_position);
     for (int i = 0; i < MAX_POSITIONS; i++) {
         position_copy(src->available_positions[i], dst->available_positions[i]);
     }
