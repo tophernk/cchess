@@ -64,7 +64,7 @@ static void test_config_valid_move_pawn(void **state) {
     free(config);
 }
 
-static void test_config_valid_move_en_passant(void **state) {
+static void test_config_pawn_moves_black(void **state) {
     config_t *config = config_new();
     char *fen = "8/8/8/8/1p6/2P5/P7/8 w - - 0 0";
     config_fen_in(config, fen);
@@ -96,6 +96,44 @@ static void test_config_valid_move_en_passant(void **state) {
     assert_null(piece);
     piece = config_get_piece(config, BLACK, "a3");
     assert_memory_equal(piece_get_available_position(piece, 0), "a2----------------------------------------------------", 54);
+
+    free(move);
+    config_dtor(config);
+    free(config);
+}
+
+static void test_config_pawn_moves_white(void **state) {
+    config_t *config = config_new();
+    char *fen = "8/p7/2p5/1P6/8/8/8/8 b - - 0 0";
+    config_fen_in(config, fen);
+
+    piece_t *piece = config_get_piece(config, BLACK, "a7");
+    assert_memory_equal(piece_get_available_position(piece, 0), "a5a6--------------------------------------------------", 54);
+    piece = config_get_piece(config, WHITE, "b5");
+    assert_memory_equal(piece_get_available_position(piece, 0), "b6c6--------------------------------------------------", 54);
+
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_from_position(move, "a7");
+    move_set_to_position(move, "a5");
+    move_set_piece_type(move, PAWN_B);
+
+    config_execute_move(config, move);
+
+    piece = config_get_piece(config, BLACK, "a5");
+    assert_memory_equal(piece_get_available_position(piece, 0), "a4----------------------------------------------------", 54);
+    piece = config_get_piece(config, WHITE, "b5");
+    assert_memory_equal(piece_get_available_position(piece, 0), "a6b6c6------------------------------------------------", 54);
+
+    move_set_from_position(move, "b5");
+    move_set_to_position(move, "a6");
+    move_set_piece_type(move, PAWN_W);
+    config_execute_move(config, move);
+
+    piece = config_get_piece(config, BLACK, "a5");
+    assert_null(piece);
+    piece = config_get_piece(config, WHITE, "a6");
+    assert_memory_equal(piece_get_available_position(piece, 0), "a7----------------------------------------------------", 54);
 
     free(move);
     config_dtor(config);
@@ -244,7 +282,8 @@ int main(void) {
             cmocka_unit_test(test_config_eval),
             cmocka_unit_test(test_config_valid_move_pawn),
             cmocka_unit_test(test_config_copy),
-            cmocka_unit_test(test_config_valid_move_en_passant),
+            cmocka_unit_test(test_config_pawn_moves_black),
+            cmocka_unit_test(test_config_pawn_moves_white),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_cpu_move),
