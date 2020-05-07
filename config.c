@@ -408,7 +408,9 @@ int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *confi
     if (xmove > 1) {
         return 0;
     }
-    if (xmove == 1 && piece_at_to_position == NONE && !config_en_passant(config, xto, yto)) {
+    char position[2];
+    position_set_file_rank(position, xto, yto);
+    if (xmove == 1 && piece_at_to_position == NONE && !config_en_passant(config, position)) {
         return 0;
     }
     if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
@@ -516,7 +518,7 @@ int config_execute_move(config_t *conf, move_t *move) {
             int yto = position_get_y(to[1]);
             if (conf->board[xto][yto] != NONE) {
                 config_remove_piece(conf, to);
-            } else if (config_en_passant(conf, xto, yto) && __is_pawn(piece)) {
+            } else if (config_en_passant(conf, to) && __is_pawn(piece)) {
                 __move_en_passant(conf, piece, xto);
             }
             piece_type_t type = piece_get_type(piece);
@@ -765,13 +767,6 @@ void config_disable_long_castles(config_t *config, piece_color_t color) {
     }
 }
 
-int config_en_passant(config_t *config, int x, int y) {
-    if (config->enpassant[0] == '-' || config->enpassant[1] == '-') {
-        return 0;
-    }
-
-    int enpassant_x = config->enpassant[0] - FILE_OFFSET;
-    int enpassant_y = (config->enpassant[1] - '0' - BOARD_SIZE) * -1;
-
-    return enpassant_x == x && enpassant_y == y;
+int config_en_passant(config_t *config, char *position) {
+    return position_valid(config->enpassant) && position_equal(config->enpassant, position);
 }

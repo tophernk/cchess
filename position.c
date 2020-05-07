@@ -8,7 +8,7 @@ int position_valid(char *position) {
     return position[0] != '-' && position[1] != '-';
 }
 
-void position_copy(char*src, char*dst) {
+void position_copy(char *src, char *dst) {
     dst[0] = src[0];
     dst[1] = src[1];
 }
@@ -34,7 +34,7 @@ void position_invalidate(char *position) {
     position[1] = '-';
 }
 
-void position_set_file_rank(char*position, int x, int y) {
+void position_set_file_rank(char *position, int x, int y) {
     position[0] = position_get_file(x);
     position[1] = position_get_rank(y);
 }
