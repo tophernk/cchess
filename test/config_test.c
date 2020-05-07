@@ -66,13 +66,13 @@ static void test_config_valid_move_pawn(void **state) {
 
 static void test_config_valid_move_en_passant(void **state) {
     config_t *config = config_new();
-    char *fen = "8/8/8/8/1p6/8/P7/8 w - - 0 0";
+    char *fen = "8/8/8/8/1p6/2P5/P7/8 w - - 0 0";
     config_fen_in(config, fen);
 
     piece_t *piece = config_get_piece(config, WHITE, "a2");
     assert_memory_equal(piece_get_available_position(piece, 0), "a4a3--------------------------------------------------", 54);
     piece = config_get_piece(config, BLACK, "b4");
-    assert_memory_equal(piece_get_available_position(piece, 0), "b3----------------------------------------------------", 54);
+    assert_memory_equal(piece_get_available_position(piece, 0), "b3c3--------------------------------------------------", 54);
 
     move_t *move = move_new();
     move_ctor(move);
@@ -85,7 +85,7 @@ static void test_config_valid_move_en_passant(void **state) {
     piece = config_get_piece(config, WHITE, "a4");
     assert_memory_equal(piece_get_available_position(piece, 0), "a5----------------------------------------------------", 54);
     piece = config_get_piece(config, BLACK, "b4");
-    assert_memory_equal(piece_get_available_position(piece, 0), "a3b3--------------------------------------------------", 54);
+    assert_memory_equal(piece_get_available_position(piece, 0), "a3b3c3------------------------------------------------", 54);
 
     move_set_from_position(move, "b4");
     move_set_to_position(move, "a3");

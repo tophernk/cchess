@@ -239,6 +239,7 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
         case QUEEN_W:
             break;
         case PAWN_B:
+            __determine_pawn_moves(piece, config);
             break;
         case KNIGHT_B:
             break;
@@ -264,18 +265,18 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
     bool is_white = piece_get_color(piece_get_type(piece)) == WHITE;
     int y_direction = is_white ? -1 : 1;
     char start_rank = is_white ? '2' : '7';
-    piece_color_t oppisite_color = is_white ? BLACK : WHITE;
+    char enpassant_rank = is_white ? '5' : '4';
+    piece_color_t opposite_color = is_white ? BLACK : WHITE;
 
-    if (position[1] == start_rank) {
-        // double forward move
-        if (config->board[x][y + 2 * y_direction] == NONE) {
-            position_set_file_rank(available_position, x, y + 2 * y_direction);
-            piece_set_available_position_new(piece, available_position, valid_pos_i++);
-        }
-        // en passant move
-        if (position_valid(config->enpassant) && __abs(position_get_x(config->enpassant) - x) == 1 && position_get_y(config->enpassant) - y == y_direction) {
-            piece_set_available_position_new(piece, config->enpassant, valid_pos_i++);
-        }
+    // double forward move
+    if (position[1] == start_rank && config->board[x][y + 2 * y_direction] == NONE) {
+        position_set_file_rank(available_position, x, y + 2 * y_direction);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
+    }
+    // en passant move
+    if (position[1] == enpassant_rank && position_valid(config->enpassant) && __abs(position_get_x(config->enpassant) - x) == 1 &&
+        position_get_y(config->enpassant) - y == y_direction) {
+        piece_set_available_position_new(piece, config->enpassant, valid_pos_i++);
     }
     // standard forward move
     int y_standard_move = y + 1 * y_direction;
@@ -286,7 +287,7 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
     // takes to left and right
     int x_takes = x + 1;
     for (int i = 0; i < 2; i++) {
-        if (_index_in_bounds(x_takes) && _index_in_bounds(y_standard_move) && piece_get_color(config->board[x_takes][y_standard_move]) == oppisite_color) {
+        if (_index_in_bounds(x_takes) && _index_in_bounds(y_standard_move) && piece_get_color(config->board[x_takes][y_standard_move]) == opposite_color) {
             position_set_file_rank(available_position, x_takes, y_standard_move);
             piece_set_available_position_new(piece, available_position, valid_pos_i++);
             x_takes = x_takes * -1;
