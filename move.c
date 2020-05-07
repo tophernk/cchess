@@ -22,9 +22,6 @@ void move_ctor(move_t *move) {
     move->score = -9999;
 }
 
-void move_dtor(move_t *move) {
-}
-
 void move_set_to_position(move_t *move, const char *position) {
     move->to[0] = position[0];
     move->to[1] = position[1];

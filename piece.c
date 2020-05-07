@@ -31,9 +31,6 @@ void piece_ctor(piece_t *piece) {
     position_invalidate(piece->current_position);
 }
 
-void piece_dtor(piece_t *piece) {
-}
-
 piece_color_t piece_get_color(piece_type_t type) {
     return is_white_piece(type) ? WHITE : BLACK;
 }
@@ -156,8 +153,7 @@ void piece_set_type(piece_t *piece, piece_type_t type) {
 }
 
 void piece_set_current_position(piece_t *piece, int x, int y) {
-    piece->current_position[0] = position_get_file(x);
-    piece->current_position[1] = position_get_rank(y);
+    position_set_file_rank(piece->current_position, x, y);
 }
 
 void piece_copy(piece_t *src, piece_t *dst) {

@@ -16,7 +16,6 @@ static void test_piece_ctor(void **state) {
         assert_false(position_valid(piece_get_available_position(piece, i)));
     }
 
-    piece_dtor(piece);
     free(piece);
 }
 
@@ -40,9 +39,7 @@ static void test_piece_copy(void **state) {
     assert_memory_equal(piece_get_current_position(piece), piece_get_current_position(copy), 2);
     assert_memory_equal(piece_get_available_position(piece, 2), piece_get_available_position(copy, 2),2);
 
-    piece_dtor(piece);
     free(piece);
-    piece_dtor(copy);
     free(copy);
 }
 
@@ -78,7 +75,6 @@ static void test_piece_invalidate_available_positions(void **state) {
         assert_false(position_valid(piece_get_available_position(piece, i)));
     }
 
-    piece_dtor(piece);
     free(piece);
 }
 

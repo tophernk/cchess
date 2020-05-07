@@ -58,7 +58,6 @@ int main(int argc, char *argv[]) {
     }
     printf("exit.. (no piece moved)\n");
 
-    move_dtor(move);
     free(move);
     config_dtor(config);
     free(config);

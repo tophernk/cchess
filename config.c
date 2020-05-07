@@ -86,10 +86,7 @@ void config_ctor(config_t *config) {
 
 void config_dtor(config_t *config) {
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        piece_dtor(config->white[i]);
         free(config->white[i]);
-
-        piece_dtor(config->black[i]);
         free(config->black[i]);
     }
 }
@@ -262,9 +259,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
         }
     }
 
-    move_dtor(move);
     free(move);
-
     config_dtor(tmp_conf);
     free(tmp_conf);
 }
@@ -647,7 +642,6 @@ int config_move_cpu(config_t *conf) {
     }
     config_print(conf);
 
-    move_dtor(next_move);
     free(next_move);
 
     return MOVE_EXECUTED(result);
@@ -685,10 +679,7 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
     move_print(best_path, DEPTH);
 
     for (int i = 0; i < DEPTH; i++) {
-        move_dtor(best_path[i]);
         free(best_path[i]);
-
-        move_dtor(current_path[i]);
         free(current_path[i]);
     }
 

@@ -9,8 +9,6 @@ move_t *move_new();
 
 void move_ctor(move_t *);
 
-void move_dtor(move_t *);
-
 char *move_get_to_position(move_t *);
 
 char *move_get_from_position(move_t *);

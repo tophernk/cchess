@@ -14,7 +14,6 @@ static void test_move_ctor(void **state) {
     assert_false(position_valid(move_get_to_position(move)));
     assert_true(move_get_piece_type(move) == NONE);
 
-    move_dtor(move);
     free(move);
 }
 
@@ -34,9 +33,7 @@ static void test_move_compare(void **state) {
     move_set_score(a, 1);
     assert_true(move_cmpr(as, bs, 1) == 1);
 
-    move_dtor(b);
     free(b);
-    move_dtor(a);
     free(a);
 }
 

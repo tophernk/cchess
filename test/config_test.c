@@ -88,7 +88,6 @@ static void test_config_valid_move_en_passant(void **state) {
     piece = config_get_piece(config, WHITE, "a4");
     assert_null(piece);
 
-    move_dtor(move);
     free(move);
 
     config_dtor(config);
@@ -157,7 +156,6 @@ static void test_config_short_castle(void **state) {
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
-    move_dtor(move);
     config_dtor(config);
     free(move);
     free(config);
@@ -183,7 +181,6 @@ static void test_config_long_castle(void **state) {
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
-    move_dtor(move);
     config_dtor(config);
     free(move);
     free(config);
@@ -226,7 +223,6 @@ void test_config_multiple_cpu_moves(void **state) {
     assert_true(piece_moved);
     assert_memory_not_equal(config->board, copy->board, 2 * BOARD_SIZE * sizeof(piece_type_t));
 
-    move_dtor(move);
     free(move);
     config_dtor(copy);
     config_dtor(config);

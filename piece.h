@@ -32,8 +32,6 @@ piece_t *piece_new();
 
 void piece_ctor(piece_t *);
 
-void piece_dtor(piece_t *);
-
 void piece_copy(piece_t *src, piece_t *dst);
 
 piece_color_t piece_get_color(piece_type_t);
