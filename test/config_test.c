@@ -229,7 +229,7 @@ void test_config_multiple_cpu_moves(void **state) {
 
     piece_moved = config_move_cpu(config);
     assert_true(piece_moved);
-    assert_memory_not_equal(config->board, copy->board, 2 * BOARD_SIZE * sizeof(piece_type_t));
+    assert_memory_not_equal(config->board, copy->board, BOARD_SIZE * BOARD_SIZE * sizeof(piece_type_t));
 
     free(move);
     config_dtor(copy);
