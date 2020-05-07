@@ -45,23 +45,23 @@ static void test_position_copy(void **state) {
 }
 
 static void test_position_get_x_from_file(void **state) {
-    assert_int_equal(position_get_x('a'), 0);
-    assert_int_equal(position_get_x('h'), 7);
+    assert_int_equal(position_to_x('a'), 0);
+    assert_int_equal(position_to_x('h'), 7);
 }
 
 static void test_position_get_y_from_rank(void **state) {
-    assert_int_equal(position_get_y('1'), 7);
-    assert_int_equal(position_get_y('8'), 0);
+    assert_int_equal(position_to_y('1'), 7);
+    assert_int_equal(position_to_y('8'), 0);
 }
 
 static void test_position_get_file_from_x(void **state) {
-    assert_int_equal(position_get_file(0), 'a');
-    assert_int_equal(position_get_file(7), 'h');
+    assert_int_equal(position_to_file(0), 'a');
+    assert_int_equal(position_to_file(7), 'h');
 }
 
 static void test_position_get_rank_from_y(void **state) {
-    assert_int_equal(position_get_rank(7), '1');
-    assert_int_equal(position_get_rank(0), '8');
+    assert_int_equal(position_to_rank(7), '1');
+    assert_int_equal(position_to_rank(0), '8');
 }
 
 int main(void) {

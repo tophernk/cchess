@@ -13,20 +13,28 @@ void position_copy(char *src, char *dst) {
     dst[1] = src[1];
 }
 
-int position_get_x(char file) {
+int position_to_x(char file) {
     return file - 'a';
 }
 
-int position_get_y(char rank) {
+int position_to_y(char rank) {
     return (rank - '8') * -1;
 }
 
-char position_get_file(int x) {
+char position_to_file(int x) {
     return x + 'a';
 }
 
-char position_get_rank(int y) {
+char position_to_rank(int y) {
     return y * -1 + '8';
+}
+
+int position_get_x(char *position) {
+    return position_to_x(position[0]);
+}
+
+int position_get_y(char *position) {
+    return position_to_y(position[1]);
 }
 
 void position_invalidate(char *position) {
@@ -35,6 +43,6 @@ void position_invalidate(char *position) {
 }
 
 void position_set_file_rank(char *position, int x, int y) {
-    position[0] = position_get_file(x);
-    position[1] = position_get_rank(y);
+    position[0] = position_to_file(x);
+    position[1] = position_to_rank(y);
 }

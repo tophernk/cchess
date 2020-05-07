@@ -37,7 +37,7 @@ void move_print(move_t **path, int size) {
         move_t *node = path[i];
         if (node->piece_type > NONE) {
             cchess_log("(%c_%c:%c%d=%d) -> ", piece_type_to_char(node->piece_type), piece_get_color(node->piece_type) == WHITE ? 'W' : 'B',
-                       position_get_file(node->to[0]), position_get_rank(node->to[1]), node->score);
+                       position_to_file(node->to[0]), position_to_rank(node->to[1]), node->score);
         }
     }
     cchess_log("<END>\n");

@@ -144,6 +144,10 @@ void piece_set_available_position(piece_t *piece, int x, int y, int index) {
     }
 }
 
+void piece_set_available_position_new(piece_t *piece, char *position, int index) {
+    position_copy(position, &(piece->available_positions[index * 2]));
+}
+
 char *piece_get_available_position(piece_t *piece, int index) {
     return &piece->available_positions[index * 2];
 }
