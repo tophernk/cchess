@@ -25,7 +25,8 @@ typedef enum {
 
 typedef enum {
     BLACK,
-    WHITE
+    WHITE,
+    COLOR_NONE
 } piece_color_t;
 
 piece_t *piece_new();

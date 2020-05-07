@@ -7,20 +7,6 @@ struct piece {
     char current_position[2];
 };
 
-int is_white_piece(piece_type_t type) {
-    switch (type) {
-        case PAWN_W:
-        case KNIGHT_W:
-        case BISHOP_W:
-        case ROOK_W:
-        case QUEEN_W:
-        case KING_W:
-            return 1;
-        default:
-            return 0;
-    }
-}
-
 piece_t *piece_new() {
     return (piece_t *) malloc(sizeof(piece_t));
 }
@@ -32,7 +18,24 @@ void piece_ctor(piece_t *piece) {
 }
 
 piece_color_t piece_get_color(piece_type_t type) {
-    return is_white_piece(type) ? WHITE : BLACK;
+    switch (type) {
+        case NONE:
+            return COLOR_NONE;
+        case PAWN_W:
+        case KNIGHT_W:
+        case BISHOP_W:
+        case ROOK_W:
+        case KING_W:
+        case QUEEN_W:
+            return WHITE;
+        case PAWN_B:
+        case KNIGHT_B:
+        case BISHOP_B:
+        case ROOK_B:
+        case KING_B:
+        case QUEEN_B:
+            return BLACK;
+    }
 }
 
 piece_type_t piece_get_type(piece_t *piece) {

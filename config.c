@@ -57,6 +57,10 @@ void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type)
 
 void __fen_parse_board(config_t *config, const char *fen, int rank, int *x, int *white_i, int *black_i, int i);
 
+void __determine_pawn_moves(piece_t *piece, config_t *config);
+
+bool _index_in_bounds(int index);
+
 config_t *config_new() {
     return (config_t *) malloc(sizeof(config_t));
 }
@@ -216,46 +220,12 @@ void __determine_available_positions(piece_t *piece, config_t *conf) {
 }
 
 void __determine_available_positions_new(piece_t *piece, config_t *config) {
-    int valid_pos_i = 0;
-    char *position = piece_get_current_position(piece);
-    char available_position[2];
+
     switch (piece_get_type(piece)) {
         case NONE:
             break;
         case PAWN_W: {
-            int x = position_get_x(position);
-            int y = position_get_y(position);
-            // extra moves from starting position
-            if (position[1] == '2') {
-                // double forward move
-                if (config->board[x][y + 2] == NONE) {
-                    position_set_file_rank(available_position, x, y + 2);
-                    piece_set_available_position_new(piece, available_position, valid_pos_i++);
-                }
-                // en passant move
-                if (position_valid(config->enpassant) && __abs(position_get_y(config->enpassant) - y) == 1) {
-                    piece_set_available_position_new(piece, config->enpassant, valid_pos_i++);
-                }
-            }
-            // standard forward move
-            if (y < BOARD_SIZE - 1 && config->board[x][y + 1] == NONE) {
-                position_set_file_rank(available_position, x, y + 1);
-                piece_set_available_position_new(piece, available_position, valid_pos_i++);
-            }
-            // takes to the right
-            if (x < BOARD_SIZE - 1 && y < BOARD_SIZE - 1 && piece_get_color(config->board[x + 1][y + 1]) == BLACK) {
-                position_set_file_rank(available_position, x + 1, y + 1);
-                piece_set_available_position_new(piece, available_position, valid_pos_i++);
-            }
-            // takes to the left
-            if (x > 0 && y < BOARD_SIZE - 1 && piece_get_color(config->board[x - 1][y + 1]) == BLACK) {
-                position_set_file_rank(available_position, x - 1, y + 1);
-                piece_set_available_position_new(piece, available_position, valid_pos_i++);
-            }
-            while (valid_pos_i < MAX_POSITIONS) {
-                position_invalidate(available_position);
-                piece_set_available_position_new(piece, available_position, valid_pos_i++);
-            }
+            __determine_pawn_moves(piece, config);
             break;
         }
         case KNIGHT_W:
@@ -282,6 +252,54 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
             break;
     }
 }
+
+void __determine_pawn_moves(piece_t *piece, config_t *config) {
+    int valid_pos_i = 0;
+    char *position = piece_get_current_position(piece);
+    char available_position[2];
+    int x = position_get_x(position);
+    int y = position_get_y(position);
+    // extra moves from starting position
+
+    bool is_white = piece_get_color(piece_get_type(piece)) == WHITE;
+    int y_direction = is_white ? -1 : 1;
+    char start_rank = is_white ? '2' : '7';
+    piece_color_t oppisite_color = is_white ? BLACK : WHITE;
+
+    if (position[1] == start_rank) {
+        // double forward move
+        if (config->board[x][y + 2 * y_direction] == NONE) {
+            position_set_file_rank(available_position, x, y + 2 * y_direction);
+            piece_set_available_position_new(piece, available_position, valid_pos_i++);
+        }
+        // en passant move
+        if (position_valid(config->enpassant) && __abs(position_get_x(config->enpassant) - x) == 1 && position_get_y(config->enpassant) - y == y_direction) {
+            piece_set_available_position_new(piece, config->enpassant, valid_pos_i++);
+        }
+    }
+    // standard forward move
+    int y_standard_move = y + 1 * y_direction;
+    if (_index_in_bounds(y_standard_move) && config->board[x][y_standard_move] == NONE) {
+        position_set_file_rank(available_position, x, y_standard_move);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
+    }
+    // takes to left and right
+    int x_takes = x + 1;
+    for (int i = 0; i < 2; i++) {
+        if (_index_in_bounds(x_takes) && _index_in_bounds(y_standard_move) && piece_get_color(config->board[x_takes][y_standard_move]) == oppisite_color) {
+            position_set_file_rank(available_position, x_takes, y_standard_move);
+            piece_set_available_position_new(piece, available_position, valid_pos_i++);
+            x_takes = x_takes * -1;
+        }
+    }
+    // invalidate remaining positions
+    while (valid_pos_i < MAX_POSITIONS) {
+        position_invalidate(available_position);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
+    }
+}
+
+bool _index_in_bounds(int index) { return index > -1 && index < BOARD_SIZE; }
 
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth) {
     // depth barrier
