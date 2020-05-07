@@ -523,11 +523,9 @@ int config_execute_move(config_t *conf, move_t *move) {
             }
             piece_type_t type = piece_get_type(piece);
             if (valid_move == 2) {
-                conf->enpassant[0] = position_get_file(xto);
-                conf->enpassant[1] = position_get_rank(piece_get_color(type) == WHITE ? 5 : 2);
+                position_set_file_rank(conf->enpassant, xto, piece_get_color(type) == WHITE ? 5 : 2);
             } else {
-                conf->enpassant[0] = '-';
-                conf->enpassant[1] = '-';
+                position_invalidate(conf->enpassant);
             }
             if (valid_move == 3 || valid_move == 4) {
                 __castle_rook_move(conf, move_color, 7, 5);
@@ -586,8 +584,7 @@ void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type)
 void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int xto) {
     int y = color == BLACK ? 0 : 7;
     char position[2];
-    position[0] = position_get_file(xfrom);
-    position[1] = position_get_rank(y);
+    position_set_file_rank(position, xfrom, y);
     piece_t *pPiece = config_get_piece(pConfig, color, position);
 
     char *rook_position = piece_get_current_position(pPiece);
@@ -600,8 +597,7 @@ void __move_en_passant(config_t *conf, piece_t *piece, int xto) {
     int en_passant_piece_rank = piece_get_color(piece_get_type(piece)) == WHITE ? 3 : 4;
 
     char en_passant_piece_position[2];
-    en_passant_piece_position[0] = position_get_file(xto);
-    en_passant_piece_position[1] = position_get_rank(en_passant_piece_rank);
+    position_set_file_rank(en_passant_piece_position, xto, en_passant_piece_rank);
 
     config_remove_piece(conf, en_passant_piece_position);
     conf->board[xto][en_passant_piece_rank] = NONE;
@@ -720,8 +716,7 @@ void config_copy(config_t *src, config_t *dst) {
     dst->long_castles_white = src->long_castles_white;
     dst->short_castles_black = src->short_castles_black;
     dst->long_castles_black = src->long_castles_black;
-    dst->enpassant[0] = src->enpassant[0];
-    dst->enpassant[1] = src->enpassant[1];
+    position_copy(src->enpassant, dst->enpassant);
 
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {
