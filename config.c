@@ -59,6 +59,8 @@ void __fen_parse_board(config_t *config, const char *fen, int rank, int *x, int 
 
 void __determine_pawn_moves(piece_t *piece, config_t *config);
 
+void __determine_knight_moves(piece_t *piece, config_t *config);
+
 bool _index_in_bounds(int index);
 
 config_t *config_new() {
@@ -224,11 +226,14 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
     switch (piece_get_type(piece)) {
         case NONE:
             break;
+        case PAWN_B:
         case PAWN_W: {
             __determine_pawn_moves(piece, config);
             break;
         }
+        case KNIGHT_B:
         case KNIGHT_W:
+            __determine_knight_moves(piece, config);
             break;
         case BISHOP_W:
             break;
@@ -237,11 +242,6 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
         case KING_W:
             break;
         case QUEEN_W:
-            break;
-        case PAWN_B:
-            __determine_pawn_moves(piece, config);
-            break;
-        case KNIGHT_B:
             break;
         case BISHOP_B:
             break;
@@ -254,13 +254,41 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
     }
 }
 
+void __determine_knight_moves(piece_t *piece, config_t *config) {
+    int valid_pos_i = 0;
+    char *position = piece_get_current_position(piece);
+    char available_position[2];
+    int x = position_get_x(position);
+    int y = position_get_y(position);
+    piece_color_t opposite_color = piece_get_color(piece_get_type(piece)) == WHITE ? BLACK : WHITE;
+
+    // test L shape moves clockwise
+    int xto[8] = {1, 2, 2, 1, -1, -2, -2, -1};
+    int yto[8] = {-2, -1, 1, 2, 2, 1, -1, -2};
+    for (int i = 0; i < 8; i++) {
+        int current_x = x + xto[i];
+        int current_y = y + yto[i];
+        if (_index_in_bounds(current_x) && _index_in_bounds(current_y)) {
+            piece_type_t piece_at_target = config->board[current_x][current_y];
+            if (piece_at_target == NONE || piece_get_color(piece_at_target) == opposite_color) {
+                position_set_file_rank(available_position, current_x, current_y);
+                piece_set_available_position_new(piece, available_position, valid_pos_i++);
+            }
+        }
+    }
+    // invalidate remaining positions
+    while (valid_pos_i < MAX_POSITIONS) {
+        position_invalidate(available_position);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
+    }
+}
+
 void __determine_pawn_moves(piece_t *piece, config_t *config) {
     int valid_pos_i = 0;
     char *position = piece_get_current_position(piece);
     char available_position[2];
     int x = position_get_x(position);
     int y = position_get_y(position);
-    // extra moves from starting position
 
     bool is_white = piece_get_color(piece_get_type(piece)) == WHITE;
     int y_direction = is_white ? -1 : 1;
@@ -268,7 +296,7 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
     char enpassant_rank = is_white ? '5' : '4';
     piece_color_t opposite_color = is_white ? BLACK : WHITE;
 
-    // double forward move
+    // double forward move from starting position
     if (position[1] == start_rank && config->board[x][y + 2 * y_direction] == NONE) {
         position_set_file_rank(available_position, x, y + 2 * y_direction);
         piece_set_available_position_new(piece, available_position, valid_pos_i++);

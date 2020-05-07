@@ -44,21 +44,14 @@ static void test_config_eval(void **state) {
     free(config);
 }
 
-static void test_config_valid_move_pawn(void **state) {
+static void test_config_knight_moves_black(void **state) {
     config_t *config = config_new();
-    config_ctor(config);
+    config_fen_in(config, "1n6/8/2P1p3/1P6/3n4/8/8/8 b - - 0 0");
 
-    config_add_piece(config, PAWN_W, 0, 6, WHITE, 0);
-    config_update_available_positions(config);
-
-    piece_t *piece = config_get_piece(config, WHITE, "a2");
-    assert_true(config_valid_move(config, piece, 0, 5));
-    assert_true(config_valid_move(config, piece, 0, 4));
-
-    config_add_piece(config, PAWN_B, 1, 5, BLACK, 0);
-    config_update_available_positions(config);
-
-    assert_true(config_valid_move(config, piece, 1, 5));
+    piece_t *piece = config_get_piece(config, BLACK, "b8");
+    assert_memory_equal(piece_get_available_position(piece, 0), "d7c6a6------------------------------------------------", 54);
+    piece = config_get_piece(config, BLACK, "d4");
+    assert_memory_equal(piece_get_available_position(piece, 0), "f5f3e2c2b3b5c6----------------------------------------", 54);
 
     config_dtor(config);
     free(config);
@@ -280,7 +273,7 @@ int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
             cmocka_unit_test(test_config_eval),
-            cmocka_unit_test(test_config_valid_move_pawn),
+            cmocka_unit_test(test_config_knight_moves_black),
             cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_pawn_moves_black),
             cmocka_unit_test(test_config_pawn_moves_white),
