@@ -63,6 +63,8 @@ void __determine_knight_moves(piece_t *piece, config_t *config);
 
 void __determine_bishop_moves(piece_t *piece, config_t *config);
 
+void __determine_rook_moves(piece_t *piece, config_t *config);
+
 bool _index_in_bounds(int index);
 
 config_t *config_new() {
@@ -241,18 +243,57 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
         case BISHOP_W:
             __determine_bishop_moves(piece, config);
             break;
+        case ROOK_B:
         case ROOK_W:
+            __determine_rook_moves(piece, config);
             break;
         case KING_W:
             break;
         case QUEEN_W:
             break;
-        case ROOK_B:
-            break;
         case KING_B:
             break;
         case QUEEN_B:
             break;
+    }
+}
+
+void __determine_rook_moves(piece_t *piece, config_t *config) {
+    int valid_pos_i = 0;
+    char *position = piece_get_current_position(piece);
+    char available_position[2];
+    int x = position_get_x(position);
+    int y = position_get_y(position);
+    piece_color_t opposite_color = piece_get_color(piece_get_type(piece)) == WHITE ? BLACK : WHITE;
+
+    // test the four directions clockwise
+    int x_direction[4] = {1, 0, -1, 0};
+    int y_direction[4] = {0, 1, 0, -1};
+    for (int i = 0; i < 4; i++) {
+        int current_x = x;
+        int current_y = y;
+        for (int ii = 0; ii < 8; ii++) {
+            current_x += x_direction[i];
+            current_y += y_direction[i];
+            if (_index_in_bounds(current_x) && _index_in_bounds(current_y)) {
+                piece_type_t piece_at_target = config->board[current_x][current_y];
+                if (piece_at_target == NONE) {
+                    position_set_file_rank(available_position, current_x, current_y);
+                    piece_set_available_position_new(piece, available_position, valid_pos_i++);
+                } else if (piece_get_color(piece_at_target) == opposite_color) {
+                    position_set_file_rank(available_position, current_x, current_y);
+                    piece_set_available_position_new(piece, available_position, valid_pos_i++);
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    // invalidate remaining positions
+    while (valid_pos_i < MAX_POSITIONS) {
+        position_invalidate(available_position);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
     }
 }
 
