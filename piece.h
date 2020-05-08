@@ -59,4 +59,14 @@ void piece_set_available_position_new(piece_t *, char *, int index);
 
 char *piece_get_available_position(piece_t *, int);
 
+/**
+ *
+ * @return
+ * 0 - invalid moves
+ * 1 - valid regular moves
+ * 2 - valid en passants
+ * 3 to 6 - valid castles (black/white short/long)
+ */
+int piece_valid_move(piece_t *, char *);
+
 #endif //CCHESS_CONFIG_H

@@ -38,16 +38,6 @@ void config_calculate_move(config_t *, move_t *);
 
 int config_en_passant(config_t *, char *);
 
-/**
- *
- * @return
- * 0 - invalid moves
- * 1 - valid regular moves
- * 2 - valid en passants
- * 3 to 6 - valid castles (black/white short/long)
- */
-int config_valid_move(config_t *, piece_t *, int xto, int yto);
-
 void config_print(config_t *);
 
 int config_move_available(config_t *, piece_color_t);

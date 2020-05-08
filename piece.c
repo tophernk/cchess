@@ -170,3 +170,37 @@ void piece_copy(piece_t *src, piece_t *dst) {
     }
     position_copy(src->current_position, dst->current_position);
 }
+
+int piece_valid_move(piece_t *piece, char *to_position) {
+    int result = 0;
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        char *availablePosition = piece_get_available_position(piece, i);
+        if (position_equal(availablePosition, to_position)) {
+            result = 1;
+            break;
+        }
+    }
+    int ymove = piece->current_position[1] - to_position[1];
+    //en passant enablers
+    if (piece->type == PAWN_W && ymove == -2) {
+        return 2;
+    }
+    if (piece->type == PAWN_B && ymove == 2) {
+        return 2;
+    }
+    // castles
+    int xmove = piece->current_position[0] - to_position[0];
+    if (piece->type == KING_B && xmove == -2) {
+        return 3;
+    }
+    if (piece->type == KING_W && xmove == -2) {
+        return 4;
+    }
+    if (piece->type == KING_B && xmove == 2) {
+        return 5;
+    }
+    if (piece->type == KING_W && xmove == 2) {
+        return 6;
+    }
+    return result;
+}

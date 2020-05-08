@@ -11,18 +11,6 @@
 #define FEN_SEPARATOR ' '
 #define FEN_SEPARATOR_RANK '/'
 
-int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
-
-int __is_valid_knight_move(int xfrom, int yfrom, int xto, int yto);
-
-int __is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
-
-int __is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
-
-int __is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg);
-
-int __is_providing_check(config_t *, int xto, int yto);
-
 void __determine_available_positions(piece_t *, config_t *);
 
 int __abs(int);
@@ -30,8 +18,6 @@ int __abs(int);
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth);
 
 bool __is_pawn(piece_t *piece);
-
-int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t, config_t *config);
 
 int __can_long_castle(piece_color_t, config_t *pConfig);
 
@@ -540,71 +526,6 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
     free(tmp_conf);
 }
 
-int config_valid_move(config_t *conf, piece_t *piece, int xto, int yto) {
-    int result = 0;
-    piece_type_t piece_at_from_position = piece_get_type(piece);
-    char *from_position = piece_get_current_position(piece);
-    int xfrom = position_to_x(from_position[0]);
-    int yfrom = position_to_y(from_position[1]);
-
-    piece_type_t piece_at_to_position = conf->board[xto][yto];
-    if (piece_at_to_position > NONE) {
-        if (piece_get_color(piece_at_from_position) == piece_get_color(piece_at_to_position)) {
-            return 0;
-        }
-    }
-
-    if (piece_at_from_position == PAWN_W || piece_at_from_position == PAWN_B) {
-        result = __is_valid_pawn_move(xfrom, yfrom, xto, yto, conf);
-    } else if (piece_at_from_position == KNIGHT_W || piece_at_from_position == KNIGHT_B) {
-        result = __is_valid_knight_move(xfrom, yfrom, xto, yto);
-    } else if (piece_at_from_position == BISHOP_W || piece_at_from_position == BISHOP_B) {
-        result = __is_valid_bishop_move(xfrom, yfrom, xto, yto, conf);
-    } else if (piece_at_from_position == ROOK_W || piece_at_from_position == ROOK_B) {
-        result = __is_valid_rook_move(xfrom, yfrom, xto, yto, conf);
-    } else if (piece_at_from_position == KING_W || piece_at_from_position == KING_B) {
-        result = __is_valid_king_move(xfrom, yfrom, xto, yto, piece_at_from_position, conf);
-    } else if (piece_at_from_position == QUEEN_W || piece_at_from_position == QUEEN_B) {
-        result = __is_valid_queen_move(xfrom, yfrom, xto, yto, conf);
-    }
-
-    if (result && __is_providing_check(conf, xto, yto)) {
-        if (piece_at_to_position == KING_B) {
-            conf->check_black = 1;
-        } else {
-            conf->check_white = 1;
-        }
-    }
-
-    return result;
-}
-
-int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t pieceType, config_t *config) {
-    int xmove = abs(xfrom - xto);
-    int ymove = abs(yfrom - yto);
-
-    if (xmove > 2 || ymove > 1) {
-        return 0;
-    } else if (xmove == 1) {
-        return 1;
-    } else if (xmove == 2) {
-        piece_color_t color = piece_get_color(pieceType);
-        if (!__castle_king_on_first_rank(yfrom, color)) {
-            return 0;
-        }
-        return __castle_long(xfrom, xto) ? __can_long_castle(color, config) : __can_short_castle(color, config);
-    }
-    return 0;
-}
-
-bool __castle_long(int xfrom, int xto) {
-    return xfrom > xto;
-}
-
-bool __castle_king_on_first_rank(int yfrom, piece_color_t color) {
-    return color == BLACK ? yfrom == 0 : yfrom == 7;
-}
-
 int __can_short_castle(piece_color_t color, config_t *pConfig) {
     int y = color == WHITE ? 7 : 0;
     if (color == BLACK && pConfig->short_castles_black) {
@@ -656,115 +577,6 @@ int __can_long_castle(piece_color_t color, config_t *pConfig) {
     return 0;
 }
 
-int __is_providing_check(config_t *config, int xto, int yto) {
-    piece_type_t type = config->board[xto][yto];
-
-    return type == KING_W || type == KING_B;
-}
-
-
-int __is_valid_pawn_move(int xfrom, int yfrom, int xto, int yto, config_t *config) {
-    int xmove = abs(xfrom - xto);
-    int ymove = abs(yfrom - yto);
-    piece_type_t piece_at_to_position = config->board[xto][yto];
-    piece_type_t piece_at_from_position = config->board[xfrom][yfrom];
-
-    if (ymove == 2) {
-        piece_color_t piece_color = piece_get_color(piece_at_from_position);
-        int pawn_start_y = piece_color == WHITE ? 6 : 1;
-        int y_direction = piece_color == WHITE ? -1 : 1;
-        if (yfrom != pawn_start_y) {
-            return 0;
-        }
-        if (config->board[xfrom][yfrom + y_direction] != NONE) {
-            return 0;
-        }
-        return 2;
-    }
-    if (xmove > 1) {
-        return 0;
-    }
-    char position[2];
-    position_set_file_rank(position, xto, yto);
-    if (xmove == 1 && piece_at_to_position == NONE && !config_en_passant(config, position)) {
-        return 0;
-    }
-    if (ymove == 1 && xmove == 0 && piece_at_to_position != NONE) {
-        return 0;
-    }
-    if (piece_at_from_position == PAWN_W && yfrom - yto != 1) {
-        return 0;
-    }
-    if (piece_at_from_position == PAWN_B && yfrom - yto != -1) {
-        return 0;
-    }
-    return 1;
-}
-
-int __is_valid_knight_move(int xfrom, int yfrom, int xto, int yto) {
-    int xmove = __abs(xfrom - xto);
-    int ymove = __abs(yfrom - yto);
-
-    if (xmove == 1 && ymove == 2)
-        return 1;
-    if (xmove == 2 && ymove == 1)
-        return 1;
-    return 0;
-}
-
-int __is_valid_bishop_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    int abs_xmove = __abs(xfrom - xto);
-    int abs_ymove = __abs(yfrom - yto);
-
-    int xmove = xfrom - xto;
-    int ymove = yfrom - yto;
-
-    if (abs_xmove == abs_ymove) {
-        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
-        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
-        while (y != yto) {
-            if (cfg->board[x][y] > NONE) {
-                return 0;
-            }
-            ymove > 0 ? y-- : y++;
-            xmove > 0 ? x-- : x++;
-        }
-        return 1;
-    }
-    return 0;
-}
-
-int __is_valid_rook_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    int xmove = xfrom - xto;
-    int ymove = yfrom - yto;
-
-    if (xmove == 0) {
-        int y = ymove > 0 ? yfrom - 1 : yfrom + 1;
-        while (y != yto) {
-            if (cfg->board[xto][y] > NONE) {
-                return 0;
-            }
-            ymove > 0 ? y-- : y++;
-        }
-        return 1;
-    }
-    if (ymove == 0) {
-        int x = xmove > 0 ? xfrom - 1 : xfrom + 1;
-        while (x != xto) {
-            if (cfg->board[x][yto] > NONE) {
-                return 0;
-            }
-            xmove > 0 ? x-- : x++;
-        }
-        return 1;
-    }
-    return 0;
-}
-
-int __is_valid_queen_move(int xfrom, int yfrom, int xto, int yto, config_t *cfg) {
-    return __is_valid_bishop_move(xfrom, yfrom, xto, yto, cfg) || __is_valid_rook_move(xfrom, yfrom, xto, yto, cfg);
-}
-
 int __abs(int x) {
     if (x < 0)
         return x * -1;
@@ -786,12 +598,12 @@ int config_execute_move(config_t *conf, move_t *move) {
     if (*from != '-' && *to != '-') {
         piece_color_t move_color = piece_get_color(move_get_piece_type(move));
         piece_t *piece = config_get_piece(conf, move_color, from);
-        int valid_move = config_valid_move(conf, piece, position_to_x(to[0]), position_to_y(to[1]));
+        int valid_move = piece_valid_move(piece, to);
         if (valid_move) {
             conf->board[position_to_x(from[0])][position_to_y(from[1])] = NONE;
 
-            int xto = position_to_x(to[0]);
-            int yto = position_to_y(to[1]);
+            int xto = position_get_x(to);
+            int yto = position_get_y(to);
             if (conf->board[xto][yto] != NONE) {
                 config_remove_piece(conf, to);
             } else if (config_en_passant(conf, to) && __is_pawn(piece)) {
