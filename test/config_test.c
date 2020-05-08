@@ -214,7 +214,7 @@ static void test_config_short_castle(void **state) {
     config_fen_in(config, fen);
 
     piece_t *piece = config_get_piece(config, WHITE, "e1");
-    assert_true(config_valid_move(config, piece, 6, 7));
+    assert_memory_equal(piece_get_available_position(piece, 0), "f2f1d1d2e2g1------------------------------------------", 54);
 
     move_t *move = move_new();
     move_ctor(move);
@@ -239,7 +239,7 @@ static void test_config_long_castle(void **state) {
     config_fen_in(config, fen);
 
     piece_t *piece = config_get_piece(config, WHITE, "e1");
-    assert_true(config_valid_move(config, piece, 2, 7));
+    assert_memory_equal(piece_get_available_position(piece, 0), "f2f1d1d2e2c1------------------------------------------", 54);
 
     move_t *move = move_new();
     move_ctor(move);

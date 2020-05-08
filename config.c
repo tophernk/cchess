@@ -35,9 +35,9 @@ bool __is_pawn(piece_t *piece);
 
 int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t, config_t *config);
 
-int __can_long_castle(int xfrom, int xto, piece_color_t, config_t *pConfig);
+int __can_long_castle(piece_color_t, config_t *pConfig);
 
-int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig);
+int __can_short_castle(piece_color_t color, config_t *pConfig);
 
 void __move_en_passant(config_t *conf, piece_t *piece, int xto);
 
@@ -66,6 +66,8 @@ void __determine_bishop_moves(piece_t *piece, config_t *config);
 void __determine_rook_moves(piece_t *piece, config_t *config);
 
 void __determine_queen_moves(piece_t *piece, config_t *config);
+
+void __determine_king_moves(piece_t *piece, config_t *config);
 
 bool _index_in_bounds(int index);
 
@@ -249,14 +251,66 @@ void __determine_available_positions_new(piece_t *piece, config_t *config) {
         case ROOK_W:
             __determine_rook_moves(piece, config);
             break;
+        case KING_B:
         case KING_W:
+            __determine_king_moves(piece, config);
             break;
         case QUEEN_B:
         case QUEEN_W:
             __determine_queen_moves(piece, config);
             break;
-        case KING_B:
-            break;
+    }
+}
+
+void __determine_king_moves(piece_t *piece, config_t *config) {
+    int valid_pos_i = 0;
+    char *position = piece_get_current_position(piece);
+    char available_position[2];
+    int x = position_get_x(position);
+    int y = position_get_y(position);
+    piece_color_t color = piece_get_color(piece_get_type(piece));
+    piece_color_t opposite_color = color == WHITE ? BLACK : WHITE;
+
+    // test the 8 directions clockwise
+    int x_direction[8] = {1, 1, 1, 0, -1, -1, -1, 0};
+    int y_direction[8] = {-1, 0, 1, 1, 1, 0, -1, -1};
+    for (int i = 0; i < 8; i++) {
+        int current_x = x;
+        int current_y = y;
+        current_x += x_direction[i];
+        current_y += y_direction[i];
+        if (_index_in_bounds(current_x) && _index_in_bounds(current_y)) {
+            piece_type_t piece_at_target = config->board[current_x][current_y];
+            if (piece_at_target == NONE) {
+                position_set_file_rank(available_position, current_x, current_y);
+                piece_set_available_position_new(piece, available_position, valid_pos_i++);
+            } else if (piece_get_color(piece_at_target) == opposite_color) {
+                position_set_file_rank(available_position, current_x, current_y);
+                piece_set_available_position_new(piece, available_position, valid_pos_i++);
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+    // test castles if starting position
+    char starting_rank = color == WHITE ? '1' : '8';
+    if (position[0] == 'e' && position[1] == starting_rank) {
+        if (__can_short_castle(color, config)) {
+            available_position[0] = 'g';
+            available_position[1] = color == WHITE ? '1' : '8';
+            piece_set_available_position_new(piece, available_position, valid_pos_i++);
+        }
+        if (__can_long_castle(color, config)) {
+            available_position[0] = 'c';
+            available_position[1] = color == WHITE ? '1' : '8';
+            piece_set_available_position_new(piece, available_position, valid_pos_i++);
+        }
+    }
+    // invalidate remaining positions
+    while (valid_pos_i < MAX_POSITIONS) {
+        position_invalidate(available_position);
+        piece_set_available_position_new(piece, available_position, valid_pos_i++);
     }
 }
 
@@ -558,7 +612,7 @@ int __is_valid_king_move(int xfrom, int yfrom, int xto, int yto, piece_type_t pi
         if (!__castle_king_on_first_rank(yfrom, color)) {
             return 0;
         }
-        return __castle_long(xfrom, xto) ? __can_long_castle(xfrom, xto, color, config) : __can_short_castle(xfrom, xto, color, config);
+        return __castle_long(xfrom, xto) ? __can_long_castle(color, config) : __can_short_castle(color, config);
     }
     return 0;
 }
@@ -571,12 +625,12 @@ bool __castle_king_on_first_rank(int yfrom, piece_color_t color) {
     return color == BLACK ? yfrom == 0 : yfrom == 7;
 }
 
-int __can_short_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig) {
+int __can_short_castle(piece_color_t color, config_t *pConfig) {
     int y = color == WHITE ? 7 : 0;
     if (color == BLACK && pConfig->short_castles_black) {
-        return __castle_clear_king_path_without_checks(xfrom, xto, 1, BLACK, pConfig, y, 3);
+        return __castle_clear_king_path_without_checks(4, 6, 1, BLACK, pConfig, y, 3);
     } else if (color == WHITE && pConfig->short_castles_white) {
-        return __castle_clear_king_path_without_checks(xfrom, xto, 1, WHITE, pConfig, y, 4);
+        return __castle_clear_king_path_without_checks(4, 6, 1, WHITE, pConfig, y, 4);
     }
     return 0;
 }
@@ -609,15 +663,15 @@ bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *
     return false;
 }
 
-int __can_long_castle(int xfrom, int xto, piece_color_t color, config_t *pConfig) {
+int __can_long_castle(piece_color_t color, config_t *pConfig) {
     int y = color == WHITE ? 7 : 0;
     if (pConfig->board[1][y] > NONE) {
         return 0;
     }
     if (color == BLACK && pConfig->long_castles_black) {
-        return __castle_clear_king_path_without_checks(xfrom, xto, -1, BLACK, pConfig, y, 5);
+        return __castle_clear_king_path_without_checks(4, 2, -1, BLACK, pConfig, y, 5);
     } else if (color == WHITE && pConfig->long_castles_white) {
-        return __castle_clear_king_path_without_checks(xfrom, xto, -1, WHITE, pConfig, y, 6);
+        return __castle_clear_king_path_without_checks(4, 2, -1, WHITE, pConfig, y, 6);
     }
     return 0;
 }
