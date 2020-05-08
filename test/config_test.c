@@ -59,7 +59,7 @@ static void test_config_knight_moves_black(void **state) {
 
 static void test_config_bishop_moves_white(void **state) {
     config_t *config = config_new();
-    config_fen_in(config, "8/8/1p6/8/3B4/4P3/8/p7 b - - 0 0");
+    config_fen_in(config, "8/8/1p6/8/3B4/4P3/8/p7 w - - 0 0");
 
     piece_t *piece = config_get_piece(config, WHITE, "d4");
     assert_memory_equal(piece_get_available_position(piece, 0), "e5f6g7h8c3b2a1c5b6------------------------------------", 54);
@@ -70,10 +70,21 @@ static void test_config_bishop_moves_white(void **state) {
 
 static void test_config_rook_moves_white(void **state) {
     config_t *config = config_new();
-    config_fen_in(config, "8/3P4/8/8/8/3R1p2/8/8 b - - 0 0");
+    config_fen_in(config, "8/3P4/8/8/8/3R1p2/8/8 w - - 0 0");
 
     piece_t *piece = config_get_piece(config, WHITE, "d3");
     assert_memory_equal(piece_get_available_position(piece, 0), "e3f3d2d1c3b3a3d4d5d6----------------------------------", 54);
+
+    config_dtor(config);
+    free(config);
+}
+
+static void test_config_queen_moves_black(void **state) {
+    config_t *config = config_new();
+    config_fen_in(config, "6P1/8/8/p2q4/8/3P1p2/8/8 b - - 0 0");
+
+    piece_t *piece = config_get_piece(config, BLACK, "d5");
+    assert_memory_equal(piece_get_available_position(piece, 0), "e6f7g8e5f5g5h5e4d4d3c4b3a2c5b5c6b7a8d6d7d8------------", 54);
 
     config_dtor(config);
     free(config);
@@ -301,6 +312,7 @@ int main(void) {
             cmocka_unit_test(test_config_knight_moves_black),
             cmocka_unit_test(test_config_bishop_moves_white),
             cmocka_unit_test(test_config_rook_moves_white),
+            cmocka_unit_test(test_config_queen_moves_black),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_cpu_move),
