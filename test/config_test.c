@@ -57,6 +57,17 @@ static void test_config_knight_moves_black(void **state) {
     free(config);
 }
 
+static void test_config_bishop_moves_white(void **state) {
+    config_t *config = config_new();
+    config_fen_in(config, "8/8/1p6/8/3B4/4P3/8/p7 b - - 0 0");
+
+    piece_t *piece = config_get_piece(config, WHITE, "d4");
+    assert_memory_equal(piece_get_available_position(piece, 0), "e5f6g7h8c3b2a1c5b6------------------------------------", 54);
+
+    config_dtor(config);
+    free(config);
+}
+
 static void test_config_pawn_moves_black(void **state) {
     config_t *config = config_new();
     char *fen = "8/8/8/8/1p6/2P5/P7/8 w - - 0 0";
@@ -273,10 +284,11 @@ int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
             cmocka_unit_test(test_config_eval),
-            cmocka_unit_test(test_config_knight_moves_black),
             cmocka_unit_test(test_config_copy),
             cmocka_unit_test(test_config_pawn_moves_black),
             cmocka_unit_test(test_config_pawn_moves_white),
+            cmocka_unit_test(test_config_knight_moves_black),
+            cmocka_unit_test(test_config_bishop_moves_white),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_cpu_move),
