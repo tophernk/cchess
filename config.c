@@ -25,8 +25,6 @@ int __is_providing_check(config_t *, int xto, int yto);
 
 void __determine_available_positions(piece_t *, config_t *);
 
-void __determine_available_positions_new(piece_t *piece, config_t *config);
-
 int __abs(int);
 
 void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth);
@@ -211,25 +209,7 @@ int config_eval(config_t *config, piece_color_t color) {
     return color == BLACK ? black - white : white - black;
 }
 
-void __determine_available_positions(piece_t *piece, config_t *conf) {
-    int valid_pos_counter = 0;
-    for (int to_x = 0; to_x < BOARD_SIZE; to_x++) {
-        for (int to_y = 0; to_y < BOARD_SIZE; to_y++) {
-            if (config_valid_move(conf, piece, to_x, to_y)) {
-                piece_set_available_position(piece, to_x, to_y, valid_pos_counter);
-                valid_pos_counter++;
-            }
-        }
-    }
-    // invalidate remaining positions
-    for (int i = valid_pos_counter; i < MAX_POSITIONS; i++) {
-        piece_set_available_position(piece, -1, -1, valid_pos_counter);
-    }
-
-    __determine_available_positions_new(piece, conf);
-}
-
-void __determine_available_positions_new(piece_t *piece, config_t *config) {
+void __determine_available_positions(piece_t *piece, config_t *config) {
 
     switch (piece_get_type(piece)) {
         case NONE:
