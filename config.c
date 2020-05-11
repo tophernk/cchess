@@ -179,8 +179,21 @@ void config_update_available_positions(config_t *conf) {
         if (piece_get_type(conf->black[i]) > NONE)
             __determine_available_positions(conf->black[i], conf);
     }
-    if (conf->check_white) {
-        printf("check!\n");
+
+    // update check flags
+    for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            piece_type_t piece = conf->board[x][y];
+            if (piece == KING_B && __field_is_attacked(x, y, WHITE, conf)) {
+                conf->check_black = true;
+            } else if (piece == KING_W && __field_is_attacked(x, y, BLACK, conf)) {
+                conf->check_white = true;
+            }
+        }
+    }
+
+    if (conf->check_white || conf->check_black) {
+        cchess_log("check!\n");
     }
 }
 

@@ -7,7 +7,7 @@
 #include "config.h"
 #include "config_p.h"
 
-static void test_config_add_piece(void **state) {
+static void test_config_add_piece() {
     config_t *config = config_new();
     config_ctor(config);
 
@@ -27,7 +27,7 @@ static void test_config_add_piece(void **state) {
     free(config);
 }
 
-static void test_config_eval(void **state) {
+static void test_config_eval() {
     config_t *config = config_new();
     config_ctor(config);
 
@@ -44,7 +44,7 @@ static void test_config_eval(void **state) {
     free(config);
 }
 
-static void test_config_knight_moves_black(void **state) {
+static void test_config_knight_moves_black() {
     config_t *config = config_new();
     config_fen_in(config, "1n6/8/2P1p3/1P6/3n4/8/8/8 b - - 0 0");
 
@@ -57,7 +57,7 @@ static void test_config_knight_moves_black(void **state) {
     free(config);
 }
 
-static void test_config_bishop_moves_white(void **state) {
+static void test_config_bishop_moves_white() {
     config_t *config = config_new();
     config_fen_in(config, "8/8/1p6/8/3B4/4P3/8/p7 w - - 0 0");
 
@@ -68,7 +68,7 @@ static void test_config_bishop_moves_white(void **state) {
     free(config);
 }
 
-static void test_config_rook_moves_white(void **state) {
+static void test_config_rook_moves_white() {
     config_t *config = config_new();
     config_fen_in(config, "8/3P4/8/8/8/3R1p2/8/8 w - - 0 0");
 
@@ -79,7 +79,7 @@ static void test_config_rook_moves_white(void **state) {
     free(config);
 }
 
-static void test_config_queen_moves_black(void **state) {
+static void test_config_queen_moves_black() {
     config_t *config = config_new();
     config_fen_in(config, "6P1/8/8/p2q4/8/3P1p2/8/8 b - - 0 0");
 
@@ -90,7 +90,7 @@ static void test_config_queen_moves_black(void **state) {
     free(config);
 }
 
-static void test_config_pawn_moves_black(void **state) {
+static void test_config_pawn_moves_black() {
     config_t *config = config_new();
     char *fen = "8/8/8/8/1p6/2P5/P7/8 w - - 0 0";
     config_fen_in(config, fen);
@@ -128,7 +128,7 @@ static void test_config_pawn_moves_black(void **state) {
     free(config);
 }
 
-static void test_config_pawn_moves_white(void **state) {
+static void test_config_pawn_moves_white() {
     config_t *config = config_new();
     char *fen = "8/p7/2p5/1P6/8/8/8/8 b - - 0 0";
     config_fen_in(config, fen);
@@ -166,7 +166,7 @@ static void test_config_pawn_moves_white(void **state) {
     free(config);
 }
 
-void test_config_cpu_move(void **state) {
+static void test_config_cpu_move() {
     config_t *config = config_new();
     char *fen = "1n2k3/p7/8/8/8/8/1P6/2B1KB2 w K - 0 0";
     config_fen_in(config, fen);
@@ -178,7 +178,7 @@ void test_config_cpu_move(void **state) {
     free(config);
 }
 
-static void test_config_copy(void **state) {
+static void test_config_copy() {
     config_t *config = config_new();
     config_ctor(config);
     config_t *copy = config_new();
@@ -208,7 +208,7 @@ static void test_config_copy(void **state) {
     free(config);
 }
 
-static void test_config_short_castle(void **state) {
+static void test_config_short_castle() {
     config_t *config = config_new();
     char *fen = "8/1p6/8/8/8/8/8/4K2R w K - 0 0";
     config_fen_in(config, fen);
@@ -233,7 +233,7 @@ static void test_config_short_castle(void **state) {
     free(config);
 }
 
-static void test_config_long_castle(void **state) {
+static void test_config_long_castle() {
     config_t *config = config_new();
     char *fen = "8/1p6/8/8/8/8/8/R3K3 w Q - 0 0";
     config_fen_in(config, fen);
@@ -258,7 +258,7 @@ static void test_config_long_castle(void **state) {
     free(config);
 }
 
-void test_config_cpu_move_from_standard_starting_position(void **state) {
+static void test_config_cpu_move_from_standard_starting_position() {
     config_t *config = config_new();
     // a3 has been played
     config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
@@ -270,7 +270,7 @@ void test_config_cpu_move_from_standard_starting_position(void **state) {
     free(config);
 }
 
-void test_config_multiple_cpu_moves(void **state) {
+static void test_config_multiple_cpu_moves() {
     config_t *config = config_new();
     // a3 has been played
     config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
@@ -302,6 +302,26 @@ void test_config_multiple_cpu_moves(void **state) {
     free(config);
 }
 
+static void test_config_check_providing_move() {
+    config_t *config = config_new();
+    // e4,d5 played
+    config_fen_in(config, "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 0");
+
+    assert_false(config->check_black);
+    assert_false(config->check_white);
+
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_from_position(move, "f1");
+    move_set_to_position(move, "b5");
+    move_set_piece_type(move, BISHOP_W);
+
+    config_execute_move(config, move);
+
+    assert_true(config->check_black);
+    assert_false(config->check_white);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
@@ -315,6 +335,7 @@ int main(void) {
             cmocka_unit_test(test_config_queen_moves_black),
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
+            cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_cpu_move),
             cmocka_unit_test(test_config_cpu_move_from_standard_starting_position),
             cmocka_unit_test(test_config_multiple_cpu_moves)
