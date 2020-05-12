@@ -4,11 +4,10 @@
 #include <setjmp.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "logger.h"
 
-static void test_logger(void **state) {
+static void test_logger() {
     cchess_log_file("test %d", 123);
 
     FILE *file = fopen(CCHESS_LOG, "rb");

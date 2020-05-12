@@ -5,6 +5,9 @@
 #include "move.h"
 
 #define MOVE_EXECUTED(x) (x != -9999)
+#define BOARD_SIZE 8
+#define NUMBER_OF_PIECES 16
+#define DEPTH 3
 
 typedef struct config config_t;
 

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "cchess.h"
 #include "config.h"
 #include "config_p.h"
 

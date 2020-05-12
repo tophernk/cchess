@@ -6,7 +6,7 @@
 
 #include "move.h"
 
-static void test_move_ctor(void **state) {
+static void test_move_ctor() {
     move_t *move = move_new();
     move_ctor(move);
 
@@ -17,7 +17,7 @@ static void test_move_ctor(void **state) {
     free(move);
 }
 
-static void test_move_compare(void **state) {
+static void test_move_compare() {
     move_t *a = move_new();
     move_ctor(a);
     move_t *b = move_new();

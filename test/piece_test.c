@@ -6,7 +6,7 @@
 
 #include "piece.h"
 
-static void test_piece_ctor(void **state) {
+static void test_piece_ctor() {
     piece_t *piece = piece_new();
     piece_ctor(piece);
 
@@ -19,7 +19,7 @@ static void test_piece_ctor(void **state) {
     free(piece);
 }
 
-static void test_piece_copy(void **state) {
+static void test_piece_copy() {
     piece_t *piece = piece_new();
     piece_ctor(piece);
     piece_set_current_position(piece, 1, 1);
@@ -43,17 +43,17 @@ static void test_piece_copy(void **state) {
     free(copy);
 }
 
-static void test_piece_get_color(void **state) {
+static void test_piece_get_color() {
     assert_int_equal(piece_get_color(PAWN_B), BLACK);
     assert_int_equal(piece_get_color(PAWN_W), WHITE);
 }
 
-static void test_piece_to_char(void **state) {
+static void test_piece_to_char() {
     assert_int_equal(piece_type_to_char(PAWN_B), 'p');
     assert_int_equal(piece_type_to_char(PAWN_W), 'P');
 }
 
-static void test_piece_invalidate_available_positions(void **state) {
+static void test_piece_invalidate_available_positions() {
     piece_t *piece = piece_new();
     piece_ctor(piece);
 

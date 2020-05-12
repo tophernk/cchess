@@ -17,9 +17,7 @@ if (GCC)
     add_link_options(--coverage)
 endif (GCC)
 
-include_directories(${PROJECT_SOURCE_DIR})
-
+include_directories(lib)
+add_subdirectory(lib)
+add_subdirectory(exec)
 add_subdirectory(test)
-add_library(lcchess logger.c position.c piece.c move.c config.c print.c)
-
-add_executable(cchess cchess.c position.c print.c config.c piece.c move.c logger.c)

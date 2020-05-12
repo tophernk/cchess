@@ -1,7 +1,6 @@
 #ifndef CCHESS_CONFIG_P_H
 #define CCHESS_CONFIG_P_H
 #include <stdbool.h>
-#include "cchess.h"
 
 struct config {
     piece_type_t board[BOARD_SIZE][BOARD_SIZE];

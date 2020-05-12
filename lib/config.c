@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "config.h"
-#include "cchess.h"
 #include "config_p.h"
 #include "move.h"
 #include "logger.h"
