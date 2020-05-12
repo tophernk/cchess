@@ -4,7 +4,6 @@
 #include "logger.h"
 
 int main(int argc, char *argv[]) {
-    srand(0);
     remove(CCHESS_LOG);
 
     config_t *config = config_new();

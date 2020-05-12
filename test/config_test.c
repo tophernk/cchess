@@ -320,6 +320,22 @@ static void test_config_check_providing_move() {
 
     assert_true(config->check_black);
     assert_false(config->check_white);
+
+    free(move);
+    config_dtor(config);
+    free(config);
+}
+
+static void test_config_fen_out() {
+    config_t *config = config_new();
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+
+    char fen[100];
+    config_fen_out(config, fen);
+    assert_string_equal(fen, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+
+    config_dtor(config);
+    free(config);
 }
 
 int main(void) {
@@ -336,6 +352,7 @@ int main(void) {
             cmocka_unit_test(test_config_short_castle),
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_check_providing_move),
+            cmocka_unit_test(test_config_fen_out),
             cmocka_unit_test(test_config_cpu_move),
             cmocka_unit_test(test_config_cpu_move_from_standard_starting_position),
             cmocka_unit_test(test_config_multiple_cpu_moves)

@@ -151,6 +151,68 @@ void config_fen_in(config_t *config, char *fen) {
     config_update_available_positions(config);
 }
 
+void config_fen_out(config_t *config, char *fen) {
+    int i = 0;
+    int empty_cell_counter = 0;
+
+    // board
+    for (int y = 0; y < BOARD_SIZE; y++) {
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            piece_type_t piece = config->board[x][y];
+            if (piece != NONE) {
+                if (empty_cell_counter != 0) {
+                    fen[i++] = empty_cell_counter + '0';
+                    empty_cell_counter = 0;
+                }
+                fen[i++] = piece_type_to_char(piece);
+            } else {
+                empty_cell_counter++;
+            }
+        }
+        if (y != BOARD_SIZE - 1) {
+            if (empty_cell_counter != 0) {
+                fen[i++] = empty_cell_counter + '0';
+                empty_cell_counter = 0;
+            }
+            fen[i++] = '/';
+        }
+    }
+    // black/white turn
+    fen[i++] = ' ';
+    // dummy
+    fen[i++] = 'w';
+    // castles
+    fen[i++] = ' ';
+    if (config->short_castles_white) {
+        fen[i++] = 'K';
+    }
+    if (config->long_castles_white) {
+        fen[i++] = 'Q';
+    }
+    if (config->short_castles_black) {
+        fen[i++] = 'k';
+    }
+    if (config->long_castles_black) {
+        fen[i++] = 'q';
+    }
+    // en passant
+    fen[i++] = ' ';
+    if (position_valid(config->enpassant)) {
+        fen[i++] = config->enpassant[0];
+        fen[i++] = config->enpassant[1];
+    } else {
+        fen[i++] = '-';
+    }
+    // meta: half move #
+    fen[i++] = ' ';
+    fen[i++] = '0';
+    // meta: half move #
+    fen[i++] = ' ';
+    fen[i++] = '0';
+    // null character
+    fen[i] = '\0';
+}
+
 void __fen_parse_board(config_t *config, const char *fen, int rank, int *x, int *white_i, int *black_i, int i) {
     piece_type_t piece = piece_char_to_type(fen[i]);
     if (piece != NONE) {

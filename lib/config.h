@@ -19,7 +19,7 @@ void config_dtor(config_t *);
 
 void config_fen_in(config_t *, char *);
 
-char *config_fen_out(config_t *);
+void config_fen_out(config_t *, char *);
 
 void config_copy(config_t *src, config_t *dst);
 
