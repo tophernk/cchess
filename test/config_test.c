@@ -272,20 +272,12 @@ static void test_config_cpu_move_from_standard_starting_position() {
 
 static void test_config_multiple_cpu_moves() {
     config_t *config = config_new();
-    // a3 has been played
-    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
 
     int piece_moved = config_move_cpu(config);
     assert_true(piece_moved);
-
-    move_t *move = move_new();
-    move_ctor(move);
-    move_set_from_position(move, "a3");
-    move_set_to_position(move, "a4");
-    move_set_piece_type(move, PAWN_W);
-
-    piece_moved = config_execute_move(config, move);
-    assert_true(MOVE_EXECUTED(piece_moved));
+    piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
 
     config_t *copy = config_new();
     config_ctor(copy);
@@ -293,9 +285,11 @@ static void test_config_multiple_cpu_moves() {
 
     piece_moved = config_move_cpu(config);
     assert_true(piece_moved);
+
+    piece_moved = config_move_cpu(config);
+    assert_true(piece_moved);
     assert_memory_not_equal(config->board, copy->board, BOARD_SIZE * BOARD_SIZE * sizeof(piece_type_t));
 
-    free(move);
     config_dtor(copy);
     config_dtor(config);
     free(copy);
