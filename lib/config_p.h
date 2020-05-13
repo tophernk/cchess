@@ -12,6 +12,7 @@ struct config {
     bool long_castles_white;
     bool short_castles_black;
     bool long_castles_black;
+    char active_color;
     char enpassant[2];
 };
 

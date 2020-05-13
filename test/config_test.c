@@ -168,7 +168,7 @@ static void test_config_pawn_moves_white() {
 
 static void test_config_cpu_move() {
     config_t *config = config_new();
-    char *fen = "1n2k3/p7/8/8/8/8/1P6/2B1KB2 w K - 0 0";
+    char *fen = "1n2k3/p7/8/8/8/8/1P6/2B1KB2 w  - 0 0";
     config_fen_in(config, fen);
 
     int piece_moved = config_move_cpu(config);
@@ -305,7 +305,7 @@ static void test_config_multiple_cpu_moves() {
 static void test_config_check_providing_move() {
     config_t *config = config_new();
     // e4,d5 played
-    config_fen_in(config, "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 0");
+    config_fen_in(config, "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 0");
 
     assert_false(config->check_black);
     assert_false(config->check_white);
@@ -328,11 +328,11 @@ static void test_config_check_providing_move() {
 
 static void test_config_fen_out() {
     config_t *config = config_new();
-    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 0");
 
     char fen[100];
     config_fen_out(config, fen);
-    assert_string_equal(fen, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+    assert_string_equal(fen, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 0");
 
     config_dtor(config);
     free(config);

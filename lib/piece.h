@@ -1,8 +1,6 @@
 #ifndef CCHESS_PIECE_H
 #define CCHESS_PIECE_H
 
-#include "position.h"
-
 #define MAX_POSITIONS 27
 
 typedef struct piece piece_t;

@@ -4,6 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "position.h"
 #include "piece.h"
 
 static void test_piece_ctor() {

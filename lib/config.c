@@ -6,6 +6,7 @@
 #include "config_p.h"
 #include "move.h"
 #include "logger.h"
+#include "position.h"
 
 #define FEN_SEPARATOR ' '
 #define FEN_SEPARATOR_RANK '/'
@@ -14,7 +15,7 @@ void __determine_available_positions(piece_t *, config_t *);
 
 int __abs(int);
 
-void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth);
+void __execute_all_moves(config_t *config, move_t **best_path, move_t **current_path, int current_depth);
 
 bool __is_pawn(piece_t *piece);
 
@@ -81,6 +82,8 @@ void config_ctor(config_t *config) {
 
     config->enpassant[0] = '-';
     config->enpassant[1] = '-';
+
+    config->active_color = 'w';
 }
 
 void config_dtor(config_t *config) {
@@ -116,7 +119,8 @@ void config_fen_in(config_t *config, char *fen) {
             continue;
         }
         if (sep_i == 1) {
-            // w/b -> white or black turn
+            // active color
+            config->active_color = value;
             continue;
         }
         if (sep_i == 2) {
@@ -177,10 +181,10 @@ void config_fen_out(config_t *config, char *fen) {
             fen[i++] = '/';
         }
     }
-    // black/white turn
+    // active color
     fen[i++] = ' ';
     // dummy
-    fen[i++] = 'w';
+    fen[i++] = config->active_color;
     // castles
     fen[i++] = ' ';
     if (config->short_castles_white) {
@@ -536,7 +540,7 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
             position_set_file_rank(available_position, x_takes, y_standard_move);
             piece_set_available_position_new(piece, available_position, valid_pos_i++);
         }
-        x_takes = x -1;
+        x_takes = x - 1;
     }
     // invalidate remaining positions
     while (valid_pos_i < MAX_POSITIONS) {
@@ -547,7 +551,7 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
 
 bool _index_in_bounds(int index) { return index > -1 && index < BOARD_SIZE; }
 
-void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t **best_path, move_t **current_path, int current_depth) {
+void __execute_all_moves(config_t *config, move_t **best_path, move_t **current_path, int current_depth) {
     // depth barrier
     if (current_depth == DEPTH) {
         move_print(current_path, DEPTH);
@@ -565,11 +569,12 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
     move_t *move = move_new();
     move_ctor(move);
 
+    bool white_turn = config->active_color == 'w';
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        piece_t **pieces = color_to_move == WHITE ? tmp_conf->white : tmp_conf->black;
+        piece_t **pieces = white_turn ? tmp_conf->white : tmp_conf->black;
         if (piece_get_type(pieces[i]) > NONE) {
             for (int x = 0; x < MAX_POSITIONS; x++) {
-                piece_t *piece_to_move = color_to_move == WHITE ? tmp_conf->white[i] : tmp_conf->black[i];
+                piece_t *piece_to_move = white_turn ? tmp_conf->white[i] : tmp_conf->black[i];
                 char *available_position = piece_get_available_position(piece_to_move, x);
                 if (*available_position != '-') {
                     move_set_piece_type(move, piece_get_type(piece_to_move));
@@ -585,7 +590,7 @@ void __execute_all_moves(config_t *config, piece_color_t color_to_move, move_t *
                     move_set_to_position(current_path_node, move_get_to_position(move));
                     move_set_score(current_path_node, score);
 
-                    __execute_all_moves(tmp_conf, color_to_move == WHITE ? BLACK : WHITE, best_path, current_path, current_depth + 1);
+                    __execute_all_moves(tmp_conf, best_path, current_path, current_depth + 1);
 
                     config_copy(config, tmp_conf);
                 } else {
@@ -670,7 +675,7 @@ int config_execute_move(config_t *conf, move_t *move) {
     conf->check_black = 0;
 
     if (*from != '-' && *to != '-') {
-        piece_color_t move_color = piece_get_color(move_get_piece_type(move));
+        piece_color_t move_color = conf->active_color == 'b' ? BLACK : WHITE;
         piece_t *piece = config_get_piece(conf, move_color, from);
         int valid_move = piece_valid_move(piece, to);
         if (valid_move) {
@@ -701,6 +706,7 @@ int config_execute_move(config_t *conf, move_t *move) {
             conf->board[xto][yto] = type;
 
             config_update_available_positions(conf);
+            conf->active_color = conf->active_color == 'b' ? 'w' : 'b';
 
             int revert_move = 0;
             if (move_color == BLACK && conf->check_black) {
@@ -823,12 +829,11 @@ void config_calculate_move(config_t *conf, move_t *calculated_move) {
     }
 
     for (int i = 0; i < DEPTH; i++) {
-        piece_color_t turn_color = i % 2 == 0 ? BLACK : WHITE;
-        __execute_all_moves(tmp_conf, turn_color, best_path, current_path, i);
+        __execute_all_moves(tmp_conf, best_path, current_path, i);
     }
 
     move_t *node_to_play = best_path[0];
-    piece_t *piece_to_move = config_get_piece(conf, BLACK, move_get_from_position(node_to_play));
+    piece_t *piece_to_move = config_get_piece(conf, conf->active_color == 'b' ? BLACK : WHITE, move_get_from_position(node_to_play));
     move_set_piece_type(calculated_move, piece_get_type(piece_to_move));
     move_set_from_position(calculated_move, move_get_from_position(node_to_play));
     move_set_to_position(calculated_move, move_get_to_position(node_to_play));
@@ -878,6 +883,7 @@ void config_copy(config_t *src, config_t *dst) {
     dst->short_castles_black = src->short_castles_black;
     dst->long_castles_black = src->long_castles_black;
     position_copy(src->enpassant, dst->enpassant);
+    dst->active_color = src->active_color;
 
     for (int x = 0; x < BOARD_SIZE; x++) {
         for (int y = 0; y < BOARD_SIZE; y++) {

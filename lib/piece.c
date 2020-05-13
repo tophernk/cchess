@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "piece.h"
+#include "position.h"
 
 struct piece {
     piece_type_t type;

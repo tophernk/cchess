@@ -5,6 +5,7 @@
 #include <cmocka.h>
 
 #include "move.h"
+#include "position.h"
 
 static void test_move_ctor() {
     move_t *move = move_new();
