@@ -33,7 +33,7 @@ bool __field_is_blocked(int x, int y, const config_t *pConfig);
 
 bool __field_is_attacked(int x, int y, piece_color_t attacking_color, config_t *pConfig);
 
-int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, config_t *pConfig, int y, int success_result);
+int __castle_clear_king_path_without_checks(int xstep, piece_color_t color, config_t *pConfig, int y, int success_result);
 
 void __castle_rook_move(config_t *pConfig, piece_color_t color, int xfrom, int xto);
 
@@ -608,16 +608,18 @@ void __execute_all_moves(config_t *config, move_t **best_path, move_t **current_
 int __can_short_castle(piece_color_t color, config_t *pConfig) {
     int y = color == WHITE ? 7 : 0;
     if (color == BLACK && pConfig->short_castles_black) {
-        return __castle_clear_king_path_without_checks(4, 6, 1, BLACK, pConfig, y, 3);
+        return __castle_clear_king_path_without_checks(1, BLACK, pConfig, y, 3);
     } else if (color == WHITE && pConfig->short_castles_white) {
-        return __castle_clear_king_path_without_checks(4, 6, 1, WHITE, pConfig, y, 4);
+        return __castle_clear_king_path_without_checks(1, WHITE, pConfig, y, 4);
     }
     return 0;
 }
 
-int __castle_clear_king_path_without_checks(int xfrom, int xto, int xstep, piece_color_t color, config_t *pConfig, int y, int success_result) {
+int __castle_clear_king_path_without_checks(int xstep, piece_color_t color, config_t *pConfig, int y, int success_result) {
     piece_color_t attacking_color = color == WHITE ? BLACK : WHITE;
-    for (int x = xfrom + xstep; x <= xto; x += xstep) {
+    int x = 4;
+    for (int i = 0; i < 2; i++) {
+        x += xstep;
         if (__field_is_blocked(x, y, pConfig) || __field_is_attacked(x, y, attacking_color, pConfig)) {
             return 0;
         }
@@ -649,9 +651,9 @@ int __can_long_castle(piece_color_t color, config_t *pConfig) {
         return 0;
     }
     if (color == BLACK && pConfig->long_castles_black) {
-        return __castle_clear_king_path_without_checks(4, 2, -1, BLACK, pConfig, y, 5);
+        return __castle_clear_king_path_without_checks(-1, BLACK, pConfig, y, 5);
     } else if (color == WHITE && pConfig->long_castles_white) {
-        return __castle_clear_king_path_without_checks(4, 2, -1, WHITE, pConfig, y, 6);
+        return __castle_clear_king_path_without_checks(-1, WHITE, pConfig, y, 6);
     }
     return 0;
 }
