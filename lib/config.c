@@ -535,8 +535,8 @@ void __determine_pawn_moves(piece_t *piece, config_t *config) {
         if (_index_in_bounds(x_takes) && _index_in_bounds(y_standard_move) && piece_get_color(config->board[x_takes][y_standard_move]) == opposite_color) {
             position_set_file_rank(available_position, x_takes, y_standard_move);
             piece_set_available_position_new(piece, available_position, valid_pos_i++);
-            x_takes = x_takes * -1;
         }
+        x_takes = x -1;
     }
     // invalidate remaining positions
     while (valid_pos_i < MAX_POSITIONS) {
@@ -791,7 +791,7 @@ void config_remove_piece(config_t *cfg, char *position) {
 }
 
 int config_move_cpu(config_t *conf) {
-    printf("cpu move...\n");
+    cchess_log("cpu move...\n");
     int result = 0;
     move_t *next_move = move_new();
     move_ctor(next_move);
@@ -800,7 +800,6 @@ int config_move_cpu(config_t *conf) {
     if (move_get_piece_type(next_move) > NONE && position_valid(move_get_to_position(next_move))) {
         result = config_execute_move(conf, next_move);
     }
-    config_print(conf);
 
     free(next_move);
 

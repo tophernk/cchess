@@ -338,6 +338,24 @@ static void test_config_fen_out() {
     free(config);
 }
 
+static void test_config_pawn_takes_to_the_left() {
+    config_t *config = config_new();
+    config_fen_in(config, "rn2kbnr/ppp1pppp/8/3q4/4P3/P7/1PPP1PPP/R1BQKBNR w KQkq - 0 0");
+
+    move_t *move = move_new();
+    move_ctor(move);
+    move_set_piece_type(move, PAWN_W);
+    move_set_from_position(move, "e4");
+    move_set_to_position(move, "d5");
+
+    int move_executed = config_execute_move(config, move);
+    assert_int_not_equal(-9999, move_executed);
+
+    config_dtor(config);
+    free(move);
+    free(config);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
@@ -353,6 +371,7 @@ int main(void) {
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_fen_out),
+            cmocka_unit_test(test_config_pawn_takes_to_the_left),
             cmocka_unit_test(test_config_cpu_move),
             cmocka_unit_test(test_config_cpu_move_from_standard_starting_position),
             cmocka_unit_test(test_config_multiple_cpu_moves)

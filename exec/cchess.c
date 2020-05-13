@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
         getchar(); // discard newline from input
         if (pieceMoved) {
             pieceMoved = config_move_cpu(config);
+            config_print(config);
             if (!config_move_available(config, WHITE)) {
                 printf("no move available for white\n");
                 break;
