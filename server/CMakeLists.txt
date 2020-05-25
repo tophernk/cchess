@@ -1,0 +1,2 @@
+add_library(cchesstcpserver STATIC stream_server.c)
+target_link_libraries(cchesstcpserver cchess)
