@@ -1,3 +1,3 @@
 FROM ubuntu:20.04
-COPY cmake-build-debug/cchess cchess
+COPY exec/cchessserver cchess
 ENTRYPOINT exec ./cchess
