@@ -34,12 +34,9 @@ pipeline {
         }
         stage('Acceptance Test') {
             steps {
-                sleep 3
-                sh '''
-                test -n \\"$(./exec/cchessclient cchess | grep response)\\"
-                '''
-                //sh "chmod +x test/acceptance_test.sh"
-                //sh "./test/acceptance_test"
+                sleep 2
+                sh "chmod +x ./test/acceptance_test.sh"
+                sh "./test/acceptance_test"
             }
         }
     }

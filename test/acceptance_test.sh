@@ -1,3 +1,2 @@
 #!/bin/bash
-test -n "$(./exec/cchessclient | grep response)"
-
+test -n "$(./exec/cchessclient cchess | grep response)"
