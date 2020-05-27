@@ -28,7 +28,7 @@ pipeline {
         stage('Docker') {
             steps {
                 sh "sudo docker build -t cchess ."
-                sh "sudo docker run -d -p1024:1024 cchess"
+                sh "sudo docker run -d --rm -p1024:1024 cchess"
                 //sh "sudo docker tag cchess localhost:5000/cchess"
             }
         }
