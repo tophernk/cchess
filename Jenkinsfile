@@ -27,9 +27,9 @@ pipeline {
         }
         stage('Docker') {
             steps {
-                sh "sudo docker build -t cchess ."
-                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name cchess cchess"
+                sh "sudo docker build -t christopherjunk/cchess ."
                 sh "sudo docker push christopherjunk/cchess"
+                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name cchess cchess"
             }
         }
         stage('Acceptance Test') {
