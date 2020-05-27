@@ -36,7 +36,7 @@ pipeline {
             steps {
                 sleep 3
                 sh '''
-                    test -n \\"$(./exec/cchessclient | grep response)\\"
+                    test -n \\"$(./exec/cchessclient 2048 | grep response)\\"
                     '''
                 //sh "chmod +x test/acceptance_test.sh"
                 //sh "./test/acceptance_test"
