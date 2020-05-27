@@ -22,7 +22,7 @@ pipeline {
                 sh "valgrind --leak-check=full ./test/position_test"
                 sh "valgrind --leak-check=full ./test/piece_test"
                 sh "valgrind --leak-check=full ./test/move_test"
-                //sh "valgrind --leak-check=full ./test/config_test"
+                sh "valgrind --leak-check=full ./test/config_test"
             }
         }
         stage('Docker') {
@@ -37,6 +37,11 @@ pipeline {
                 sleep 2
                 sh "chmod +x ./test/acceptance_test.sh"
                 sh "./test/acceptance_test.sh"
+            }
+        }
+        post {
+            always {
+                sh "sudo docker stop cchess"
             }
         }
     }
