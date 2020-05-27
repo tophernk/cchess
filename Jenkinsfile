@@ -36,7 +36,7 @@ pipeline {
             steps {
                 sleep 2
                 sh "chmod +x ./test/acceptance_test.sh"
-                sh "./test/acceptance_test"
+                sh "./test/acceptance_test.sh"
             }
         }
     }
