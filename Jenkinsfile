@@ -39,10 +39,10 @@ pipeline {
                 sh "./test/acceptance_test.sh"
             }
         }
-        post {
-            always {
-                sh "sudo docker stop cchess"
-            }
+    }
+    post {
+        always {
+            sh "sudo docker stop cchess"
         }
     }
 }
