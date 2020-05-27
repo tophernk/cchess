@@ -9,13 +9,19 @@
 #include <stream_client.h>
 
 int main(int argc, char **argv) {
+    char *host;
     int server_port = 1024;
-    if(argc == 2) {
+    if (argc > 1) {
+        host = argv[1];
+    } else {
+        host = "localhost";
+    }
+    if (argc > 2) {
         server_port = 0;
-        char *port = argv[1];
+        char *port = argv[2];
         int port_len = strlen(port);
         int port_digit;
-        for(int i = 0; i < port_len; i++) {
+        for (int i = 0; i < port_len; i++) {
             port_digit = port[i] - '0';
             server_port = server_port * 10 + port_digit;
         }
@@ -28,7 +34,6 @@ int main(int argc, char **argv) {
     }
 
     // get host address
-    char host[] = "localhost";
     struct hostent *host_entry;
     host_entry = gethostbyname(host);
     if (!host_entry) {

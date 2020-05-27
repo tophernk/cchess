@@ -27,10 +27,8 @@ pipeline {
         }
         stage('Docker') {
             steps {
-                sh '''
-                sudo docker build -t cchess .
-                sudo docker run -d --rm -p1024:1024 --network=\\"dockernet\\" cchess
-                '''
+                sh "sudo docker build -t cchess ."
+                sh "sudo docker run -d --rm -p1024:1024 --network=dockernet --hostname=cchessserver cchess"
                 //sh "sudo docker tag cchess localhost:5000/cchess"
             }
         }
@@ -38,7 +36,7 @@ pipeline {
             steps {
                 sleep 3
                 sh '''
-                    test -n \\"$(./exec/cchessclient | grep response)\\"
+                test -n \\"$(./exec/cchessclient cchessserver | grep response)\\"
                 '''
                 //sh "chmod +x test/acceptance_test.sh"
                 //sh "./test/acceptance_test"
