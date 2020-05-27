@@ -35,7 +35,7 @@ pipeline {
         stage('Acceptance Test') {
             steps {
                 sleep 3
-                sh "test -n \"$(./exec/cchessclient | grep response)\""
+                sh "test -n \\"$(./exec/cchessclient | grep response)\\""
                 //sh "chmod +x test/acceptance_test.sh"
                 //sh "./test/acceptance_test"
             }
