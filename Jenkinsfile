@@ -28,7 +28,15 @@ pipeline {
         stage('Docker') {
             steps {
                 sh "sudo docker build -t cchess ."
+                sh "sudo docker run -d -p1024:1024 cchess"
                 //sh "sudo docker tag cchess localhost:5000/cchess"
+            }
+        }
+        stage('Acceptance Test') {
+            steps {
+                sleep 60
+                sh "chmod +x test/acceptance_test.sh"
+                sh "./test/acceptance_test"
             }
         }
     }
