@@ -28,7 +28,7 @@ pipeline {
         stage('Docker') {
             steps {
                 sh "sudo docker build -t cchess ."
-                sh "sudo docker run -d --rm -p1024:1024 --network=dockernet --hostname=cchessserver cchess"
+                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name cchess cchess"
                 //sh "sudo docker tag cchess localhost:5000/cchess"
             }
         }
