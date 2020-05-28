@@ -1,4 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR} /usr/local/Cellar/cmocka/1.1.5/include)
+include_directories(../.. /usr/local/Cellar/cmocka/1.1.5/include)
 find_library(CMOCKA cmocka /usr/local/Cellar/cmocka/1.1.5/lib)
 
 add_executable(logger_test logger_test.c)

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cchess-deployment
+  labels:
+    app: cchess
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cchess
+  template:
+    metadata:
+      labels:
+        app: cchess
+    spec:
+      containers:
+        - name: cchess
+          image: christopherjunk/cchess
+          ports:
+            - containerPort: 1024

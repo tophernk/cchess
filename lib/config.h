@@ -1,13 +1,12 @@
 #ifndef CCHESS_CONFIG_H
 #define CCHESS_CONFIG_H
 
+#include <stdbool.h>
 #include "piece.h"
 #include "move.h"
 
-#define MOVE_EXECUTED(x) (x != -9999)
 #define BOARD_SIZE 8
 #define NUMBER_OF_PIECES 16
-#define DEPTH 3
 
 typedef struct config config_t;
 
@@ -29,15 +28,13 @@ void config_update_available_positions(config_t *);
 
 piece_t *config_get_piece(config_t *, piece_color_t, char position[2]);
 
+piece_t **config_get_pieces_of_active_color(config_t *);
+
 void config_add_piece(config_t *, piece_type_t, int x, int y, piece_color_t, int index);
 
 void config_remove_piece(config_t *cfg, char *);
 
 int config_execute_move(config_t *, move_t *);
-
-int config_move_cpu(config_t *);
-
-void config_calculate_move(config_t *, move_t *);
 
 int config_en_passant(config_t *, char *);
 
@@ -52,5 +49,9 @@ void config_disable_short_castles(config_t *, piece_color_t);
 void config_enable_long_castles(config_t *, piece_color_t);
 
 void config_disable_long_castles(config_t *, piece_color_t);
+
+bool config_is_white_to_move(config_t *);
+
+void config_set_white_to_move(config_t *, bool);
 
 #endif //CCHESS_CONFIG_H

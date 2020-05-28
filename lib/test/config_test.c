@@ -166,18 +166,6 @@ static void test_config_pawn_moves_white() {
     free(config);
 }
 
-static void test_config_cpu_move() {
-    config_t *config = config_new();
-    char *fen = "1n2k3/p7/8/8/8/8/1P6/2B1KB2 w  - 0 0";
-    config_fen_in(config, fen);
-
-    int piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-
-    config_dtor(config);
-    free(config);
-}
-
 static void test_config_copy() {
     config_t *config = config_new();
     config_ctor(config);
@@ -258,41 +246,6 @@ static void test_config_long_castle() {
     free(config);
 }
 
-static void test_config_cpu_move_from_standard_starting_position() {
-    config_t *config = config_new();
-    // a3 has been played
-    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 0");
-
-    int piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-
-    config_dtor(config);
-    free(config);
-}
-
-static void test_config_multiple_cpu_moves() {
-    config_t *config = config_new();
-    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
-
-    int piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-    piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-
-    config_t *copy = config_new();
-    config_ctor(copy);
-    config_copy(config, copy);
-
-    piece_moved = config_move_cpu(config);
-    assert_true(piece_moved);
-    assert_memory_not_equal(config->board, copy->board, BOARD_SIZE * BOARD_SIZE * sizeof(piece_type_t));
-
-    config_dtor(copy);
-    config_dtor(config);
-    free(copy);
-    free(config);
-}
-
 static void test_config_check_providing_move() {
     config_t *config = config_new();
     // e4,d5 played
@@ -362,10 +315,7 @@ int main(void) {
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_fen_out),
-            cmocka_unit_test(test_config_pawn_takes_to_the_left),
-            cmocka_unit_test(test_config_cpu_move),
-            cmocka_unit_test(test_config_cpu_move_from_standard_starting_position),
-            cmocka_unit_test(test_config_multiple_cpu_moves)
+            cmocka_unit_test(test_config_pawn_takes_to_the_left)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

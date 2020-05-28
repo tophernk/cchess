@@ -7,6 +7,7 @@
 #include <pthread.h>
 
 #include "config.h"
+#include "ccbot.h"
 #include "stream_server.h"
 
 void *perform_cpu_move(void *arg) {
@@ -20,7 +21,7 @@ void *perform_cpu_move(void *arg) {
             break;
         }
         config_fen_in(config, buffer);
-        config_move_cpu(config);
+        ccbot_execute_move(config);
         char fen_out[100];
         config_fen_out(config, fen_out);
         write(sd, fen_out, 100);

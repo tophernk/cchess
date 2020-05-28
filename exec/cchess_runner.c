@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+#include "ccbot.h"
 #include "logger.h"
 
 int main(int argc, char *argv[]) {
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]) {
         config_fen_in(config, fen_in);
     }
 
-    config_move_cpu(config);
+    ccbot_execute_move(config);
     char fen_out[100];
     config_fen_out(config, fen_out);
     printf("%s\n", fen_out);

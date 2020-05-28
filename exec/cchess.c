@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "config.h"
+#include "ccbot.h"
 #include "logger.h"
 
 int main(int argc, char *argv[]) {
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
 
         getchar(); // discard newline from input
         if (pieceMoved) {
-            pieceMoved = config_move_cpu(config);
+            pieceMoved = ccbot_execute_move(config);
             config_print(config);
             if (!config_move_available(config, WHITE)) {
                 printf("no move available for white\n");
