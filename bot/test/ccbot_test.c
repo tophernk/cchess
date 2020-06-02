@@ -39,8 +39,8 @@ static void test_ccbot_move_from_standard_starting_position() {
 
 static void test_ccbot_multiple_moves() {
     config_t *config = config_new();
-    char *in = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
-    config_fen_in(config, in);
+    char in[100];
+    config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
 
     ccbot_execute_move(config);
     char out[100];
