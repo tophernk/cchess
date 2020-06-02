@@ -22,7 +22,7 @@ void config_fen_out(config_t *, char *);
 
 void config_copy(config_t *src, config_t *dst);
 
-int config_eval(config_t *config, piece_color_t color);
+int config_eval(config_t *config);
 
 int config_eval_to_depth(config_t *config, int depth);
 
@@ -55,5 +55,7 @@ void config_disable_long_castles(config_t *, piece_color_t);
 bool config_is_white_to_move(config_t *);
 
 void config_set_white_to_move(config_t *, bool);
+
+void config_determine_best_move(config_t *, int depth, move_t*);
 
 #endif //CCHESS_CONFIG_H

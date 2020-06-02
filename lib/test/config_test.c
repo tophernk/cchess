@@ -32,13 +32,13 @@ static void test_config_eval() {
     config_ctor(config);
 
     config_add_piece(config, PAWN_W, 0, 1, WHITE, 0);
-    assert_true(config_eval(config, WHITE) > config_eval(config, BLACK));
+    assert_true(config_eval(config) > 0);
 
     config_add_piece(config, PAWN_B, 0, 6, BLACK, 0);
-    assert_true(config_eval(config, WHITE) == config_eval(config, BLACK));
+    assert_true(config_eval(config) == 0);
 
     config_add_piece(config, PAWN_B, 1, 6, BLACK, 1);
-    assert_true(config_eval(config, WHITE) < config_eval(config, BLACK));
+    assert_true(config_eval(config) < 0);
 
     config_dtor(config);
     free(config);
@@ -300,11 +300,22 @@ static void test_config_pawn_takes_to_the_left() {
     free(config);
 }
 
-static void test_config_eval_to_depth() {
+static void test_config_eval_to_depth_white() {
     config_t *config = config_new();
     config_fen_in(config, "rn2kbnr/ppp1pppp/8/8/4P3/P7/1PPP1PPP/R1BQKBNR w KQkq - 0 0");
 
     int eval_result = config_eval_to_depth(config, 2);
+    assert_true(eval_result > 0);
+
+    config_dtor(config);
+    free(config);
+}
+
+static void test_config_eval_to_depth_black() {
+    config_t *config = config_new();
+    config_fen_in(config, "rn2kbnr/ppp1pppp/8/8/4P3/P7/1PPP1PPP/R1BQKBNR b KQkq - 0 0");
+
+    int eval_result = config_eval_to_depth(config, 3);
     assert_true(eval_result > 0);
 
     config_dtor(config);
@@ -327,7 +338,7 @@ int main(void) {
             cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_fen_out),
             cmocka_unit_test(test_config_pawn_takes_to_the_left),
-            cmocka_unit_test(test_config_eval_to_depth)
+            cmocka_unit_test(test_config_eval_to_depth_white)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

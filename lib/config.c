@@ -261,14 +261,14 @@ void config_update_available_positions(config_t *conf) {
 }
 
 
-int config_eval(config_t *config, piece_color_t color) {
+int config_eval(config_t *config) {
     int white = 0;
     int black = 0;
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         white += piece_type_get_weight(piece_get_type(config->white[i]));
         black += piece_type_get_weight(piece_get_type(config->black[i]));
     }
-    return color == BLACK ? black - white : white - black;
+    return white - black;
 }
 
 void __determine_available_positions(piece_t *piece, config_t *config) {
@@ -674,7 +674,7 @@ int config_execute_move(config_t *conf, move_t *move) {
     config_dtor(backup_config);
     free(backup_config);
 
-    return move_executed ? config_eval(conf, BLACK) : -9999;
+    return move_executed ? config_eval(conf) : -9999;
 }
 
 void __config_update_castle_flags(config_t *conf, int xfrom, piece_type_t *type) {
@@ -836,6 +836,189 @@ piece_t **config_get_pieces_of_active_color(config_t *config) {
     return config->active_color == 'w' ? config->white : config->black;
 }
 
+void
+_determine_best_eval_to_depth(config_t *config, int *best_path, int *current_path, const int total_depth, const int current_depth, piece_color_t eval_color);
+
+int _path_eval(int *path, int depth);
+
+int _path_cmpr(int *a, int *b, int depth, piece_color_t eval_color);
+
+void _execute_all_moves(config_t *config, move_t **best_path, move_t **current_path, int max_depth, int current_depth);
+
 int config_eval_to_depth(config_t *config, int depth) {
-    return 1;
+    int *best_path = (int *) malloc(sizeof(int) * depth);
+    int *current_path = (int *) malloc(sizeof(int) * depth);
+    for (int i = 0; i < depth; i++) {
+        best_path[i] = 0;
+        current_path[i] = 0;
+    }
+    piece_color_t eval_color = config->active_color == 'w' ? WHITE : BLACK;
+    for (int i = 0; i < depth; i++) {
+        _determine_best_eval_to_depth(config, best_path, current_path, depth, i, eval_color);
+    }
+
+    int result = _path_eval(best_path, depth);
+
+    free(best_path);
+    free(current_path);
+
+    return result;
+}
+
+void
+_determine_best_eval_to_depth(config_t *config, int *best_path, int *current_path, const int total_depth, const int current_depth, piece_color_t eval_color) {
+    // depth barrier
+    if (current_depth == total_depth) {
+        if (_path_cmpr(current_path, best_path, total_depth, eval_color)) {
+            // update best path
+            for (int i = 0; i < total_depth; i++) {
+                best_path[i] = current_path[i];
+            }
+        }
+        return;
+    }
+    // game ending barrier
+
+    //
+    config_t *tmp_conf = config_new();
+    config_ctor(tmp_conf);
+    config_copy(config, tmp_conf);
+    move_t *move = move_new();
+    move_ctor(move);
+
+    piece_t **pieces = config_get_pieces_of_active_color(config);
+    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
+        if (piece_get_type(pieces[i]) > NONE) {
+            for (int x = 0; x < MAX_POSITIONS; x++) {
+                piece_t *piece_to_move = pieces[i];
+                char *available_position = piece_get_available_position(piece_to_move, x);
+                if (*available_position != '-') {
+                    move_set_piece_type(move, piece_get_type(piece_to_move));
+                    char *currentPosition = piece_get_current_position(piece_to_move);
+
+                    move_set_from_position(move, currentPosition);
+                    move_set_to_position(move, available_position);
+                    int score = config_execute_move(tmp_conf, move);
+                    current_path[current_depth] = score;
+
+                    _determine_best_eval_to_depth(tmp_conf, best_path, current_path, total_depth, current_depth + 1, eval_color);
+
+                    config_copy(config, tmp_conf);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    free(move);
+    config_dtor(tmp_conf);
+    free(tmp_conf);
+}
+
+int _path_eval(int *path, int depth) {
+    int result = 0;
+    for (int i = 0; i < depth; i++) {
+        result += (depth - i) * path[i];
+    }
+    return result;
+}
+
+int _path_cmpr(int *a, int *b, int depth, piece_color_t eval_color) {
+    int a_eval = _path_eval(a, depth);
+    int b_eval = _path_eval(b, depth);
+
+    return eval_color == WHITE ? a_eval > b_eval : a_eval < b_eval;
+}
+
+void config_determine_best_move(config_t *config, int depth, move_t *calculated_move) {
+    config_t *tmp_conf = config_new();
+    config_ctor(tmp_conf);
+    config_copy(config, tmp_conf);
+
+    move_t *best_path[depth];
+    move_t *current_path[depth];
+
+    for (int i = 0; i < depth; i++) {
+        best_path[i] = move_new();
+        move_ctor(best_path[i]);
+
+        current_path[i] = move_new();
+        move_ctor(current_path[i]);
+    }
+
+    for (int i = 0; i < depth; i++) {
+        _execute_all_moves(tmp_conf, best_path, current_path, depth, i);
+    }
+
+    move_t *node_to_play = best_path[0];
+    piece_t *piece_to_move = config_get_piece(config, config_is_white_to_move(config) ? WHITE : BLACK, move_get_from_position(node_to_play));
+    move_set_piece_type(calculated_move, piece_get_type(piece_to_move));
+    move_set_from_position(calculated_move, move_get_from_position(node_to_play));
+    move_set_to_position(calculated_move, move_get_to_position(node_to_play));
+    move_set_score(calculated_move, move_get_score(node_to_play));
+
+    cchess_log("-----------------\nbest path: ");
+    move_print(best_path, depth);
+
+    for (int i = 0; i < depth; i++) {
+        free(best_path[i]);
+        free(current_path[i]);
+    }
+
+    config_dtor(tmp_conf);
+    free(tmp_conf);
+}
+
+void _execute_all_moves(config_t *config, move_t **best_path, move_t **current_path, int max_depth, int current_depth) {
+    // depth barrier
+    if (current_depth == max_depth) {
+        move_print(current_path, max_depth);
+        if (move_cmpr(current_path, best_path, max_depth)) {
+            move_cpy(current_path, best_path, max_depth);
+        }
+        return;
+    }
+    // game ending barrier
+
+    //
+    config_t *tmp_conf = config_new();
+    config_ctor(tmp_conf);
+    config_copy(config, tmp_conf);
+    move_t *move = move_new();
+    move_ctor(move);
+
+    piece_t **pieces = config_get_pieces_of_active_color(config);
+    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
+        if (piece_get_type(pieces[i]) > NONE) {
+            for (int x = 0; x < MAX_POSITIONS; x++) {
+                piece_t *piece_to_move = pieces[i];
+                char *available_position = piece_get_available_position(piece_to_move, x);
+                if (*available_position != '-') {
+                    move_set_piece_type(move, piece_get_type(piece_to_move));
+                    char *currentPosition = piece_get_current_position(piece_to_move);
+
+                    move_set_from_position(move, currentPosition);
+                    move_set_to_position(move, available_position);
+                    int score = config_execute_move(tmp_conf, move);
+
+                    move_t *current_path_node = current_path[current_depth];
+                    move_set_piece_type(current_path_node, piece_get_type(piece_to_move));
+                    move_set_from_position(current_path_node, move_get_from_position(move));
+                    move_set_to_position(current_path_node, move_get_to_position(move));
+                    move_set_score(current_path_node, score);
+
+                    _execute_all_moves(tmp_conf, best_path, current_path, max_depth, current_depth + 1);
+
+                    config_copy(config, tmp_conf);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    free(move);
+    config_dtor(tmp_conf);
+    free(tmp_conf);
 }
