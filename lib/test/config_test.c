@@ -300,6 +300,17 @@ static void test_config_pawn_takes_to_the_left() {
     free(config);
 }
 
+static void test_config_eval_to_depth() {
+    config_t *config = config_new();
+    config_fen_in(config, "rn2kbnr/ppp1pppp/8/8/4P3/P7/1PPP1PPP/R1BQKBNR w KQkq - 0 0");
+
+    int eval_result = config_eval_to_depth(config, 2);
+    assert_true(eval_result > 0);
+
+    config_dtor(config);
+    free(config);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_config_add_piece),
@@ -315,7 +326,8 @@ int main(void) {
             cmocka_unit_test(test_config_long_castle),
             cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_fen_out),
-            cmocka_unit_test(test_config_pawn_takes_to_the_left)
+            cmocka_unit_test(test_config_pawn_takes_to_the_left),
+            cmocka_unit_test(test_config_eval_to_depth)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

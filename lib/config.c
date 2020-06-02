@@ -835,3 +835,7 @@ void config_set_white_to_move(config_t *config, bool white_to_move) {
 piece_t **config_get_pieces_of_active_color(config_t *config) {
     return config->active_color == 'w' ? config->white : config->black;
 }
+
+int config_eval_to_depth(config_t *config, int depth) {
+    return 1;
+}
