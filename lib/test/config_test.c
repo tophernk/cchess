@@ -106,7 +106,9 @@ static void test_config_pawn_moves_black() {
     move_set_to_position(move, "a4");
     move_set_piece_type(move, PAWN_W);
 
-    config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, WHITE, "a4");
     assert_memory_equal(piece_get_available_position(piece, 0), "a5----------------------------------------------------", 54);
@@ -116,13 +118,14 @@ static void test_config_pawn_moves_black() {
     move_set_from_position(move, "b4");
     move_set_to_position(move, "a3");
     move_set_piece_type(move, PAWN_B);
-    config_execute_move(config, move);
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, WHITE, "a4");
     assert_null(piece);
     piece = config_get_piece(config, BLACK, "a3");
     assert_memory_equal(piece_get_available_position(piece, 0), "a2----------------------------------------------------", 54);
 
+    free(score);
     free(move);
     config_dtor(config);
     free(config);
@@ -144,7 +147,9 @@ static void test_config_pawn_moves_white() {
     move_set_to_position(move, "a5");
     move_set_piece_type(move, PAWN_B);
 
-    config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, BLACK, "a5");
     assert_memory_equal(piece_get_available_position(piece, 0), "a4----------------------------------------------------", 54);
@@ -154,13 +159,14 @@ static void test_config_pawn_moves_white() {
     move_set_from_position(move, "b5");
     move_set_to_position(move, "a6");
     move_set_piece_type(move, PAWN_W);
-    config_execute_move(config, move);
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, BLACK, "a5");
     assert_null(piece);
     piece = config_get_piece(config, WHITE, "a6");
     assert_memory_equal(piece_get_available_position(piece, 0), "a7----------------------------------------------------", 54);
 
+    free(score);
     free(move);
     config_dtor(config);
     free(config);
@@ -210,13 +216,16 @@ static void test_config_short_castle() {
     move_set_to_position(move, "g1");
     move_set_piece_type(move, KING_W);
 
-    config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, WHITE, "f1");
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
     config_dtor(config);
+    free(score);
     free(move);
     free(config);
 }
@@ -235,13 +244,16 @@ static void test_config_long_castle() {
     move_set_to_position(move, "c1");
     move_set_piece_type(move, KING_W);
 
-    config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    config_execute_move(config, move, score);
 
     piece = config_get_piece(config, WHITE, "d1");
     assert_non_null(piece);
     assert_true(piece_get_type(piece) == ROOK_W);
 
     config_dtor(config);
+    free(score);
     free(move);
     free(config);
 }
@@ -260,11 +272,14 @@ static void test_config_check_providing_move() {
     move_set_to_position(move, "b5");
     move_set_piece_type(move, BISHOP_W);
 
-    config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    config_execute_move(config, move, score);
 
     assert_true(config->check_black);
     assert_false(config->check_white);
 
+    free(score);
     free(move);
     config_dtor(config);
     free(config);
@@ -292,10 +307,13 @@ static void test_config_pawn_takes_to_the_left() {
     move_set_from_position(move, "e4");
     move_set_to_position(move, "d5");
 
-    int move_executed = config_execute_move(config, move);
+    int *score = (int *) malloc(sizeof(int));
+
+    int move_executed = config_execute_move(config, move, score);
     assert_int_not_equal(-9999, move_executed);
 
     config_dtor(config);
+    free(score);
     free(move);
     free(config);
 }
@@ -313,10 +331,10 @@ static void test_config_eval_to_depth_white() {
 
 static void test_config_eval_to_depth_black() {
     config_t *config = config_new();
-    config_fen_in(config, "rn2kbnr/ppp1pppp/8/8/4P3/P7/1PPP1PPP/R1BQKBNR b KQkq - 0 0");
+    config_fen_in(config, "qqqqkbnr/ppp1pppp/8/8/4P3/P7/1PPP1PPP/R1BQKBNR b KQkq - 0 0");
 
-    int eval_result = config_eval_to_depth(config, 3);
-    assert_true(eval_result > 0);
+    int eval_result = config_eval_to_depth(config, 2);
+    assert_true(eval_result < 0);
 
     config_dtor(config);
     free(config);
@@ -338,7 +356,8 @@ int main(void) {
             cmocka_unit_test(test_config_check_providing_move),
             cmocka_unit_test(test_config_fen_out),
             cmocka_unit_test(test_config_pawn_takes_to_the_left),
-            cmocka_unit_test(test_config_eval_to_depth_white)
+            cmocka_unit_test(test_config_eval_to_depth_white),
+            cmocka_unit_test(test_config_eval_to_depth_black)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

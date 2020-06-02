@@ -14,7 +14,7 @@ static void test_ccbot_move() {
     config_fen_in(config, in);
 
     ccbot_execute_move(config);
-    char *out[100];
+    char out[100];
     config_fen_out(config, out);
     assert_string_not_equal(in, out);
 
@@ -29,7 +29,7 @@ static void test_ccbot_move_from_standard_starting_position() {
     config_fen_in(config, in);
 
     ccbot_execute_move(config);
-    char *out[100];
+    char out[100];
     config_fen_out(config, out);
     assert_string_not_equal(in, out);
 
@@ -43,7 +43,7 @@ static void test_ccbot_multiple_moves() {
     config_fen_in(config, in);
 
     ccbot_execute_move(config);
-    char *out[100];
+    char out[100];
     config_fen_out(config, out);
     assert_string_not_equal(in, out);
 

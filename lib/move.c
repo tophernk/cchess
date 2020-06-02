@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "position.h"
 #include "move.h"
 #include "logger.h"
 
@@ -19,7 +20,7 @@ void move_ctor(move_t *move) {
     move->piece_type = NONE;
     position_invalidate(move->from);
     position_invalidate(move->to);
-    move->score = -9999;
+    move->score = 0;
 }
 
 void move_set_to_position(move_t *move, const char *position) {

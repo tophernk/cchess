@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "config.h"
 #include "ccbot.h"
 #include "logger.h"
@@ -23,6 +25,8 @@ int main(int argc, char *argv[]) {
     char to[2];
     int pieceMoved = 1;
 
+    int *score = (int *) malloc(sizeof(int));
+
     while (pieceMoved) {
         while (scanf("%c %c %c %c", &from[0], &from[1], &to[0], &to[1]) != 4) {
             while ((from[0] = getchar()) != EOF && from[0] != '\n');
@@ -38,18 +42,26 @@ int main(int argc, char *argv[]) {
         move_set_to_position(move, to);
         move_set_piece_type(move, piece_get_type(piece));
 
-        int eval = config_execute_move(config, move);
-        if (MOVE_EXECUTED(eval)) {
-            pieceMoved = 1;
+        pieceMoved = config_execute_move(config, move, score);
+        if (pieceMoved) {
             config_print(config);
         } else {
             printf("invalid move\n");
-            pieceMoved = 0;
         }
 
         getchar(); // discard newline from input
         if (pieceMoved) {
-            pieceMoved = ccbot_execute_move(config);
+            char config_before_move[100];
+            char config_after_move[100];
+
+            memset(config_before_move, 0, 100);
+            memset(config_after_move, 0, 100);
+
+            config_fen_out(config, config_before_move);
+            ccbot_execute_move(config);
+            config_fen_out(config, config_after_move);
+
+            pieceMoved = strncmp(config_before_move, config_after_move, 100);
             config_print(config);
             if (!config_move_available(config, WHITE)) {
                 printf("no move available for white\n");
@@ -59,6 +71,7 @@ int main(int argc, char *argv[]) {
     }
     printf("exit.. (no piece moved)\n");
 
+    free(score);
     free(move);
     config_dtor(config);
     free(config);
