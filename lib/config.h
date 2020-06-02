@@ -58,4 +58,6 @@ void config_set_white_to_move(config_t *, bool);
 
 void config_determine_best_move(config_t *, int depth, move_t*);
 
+void config_play_best_move(config_t *, int depth);
+
 #endif //CCHESS_CONFIG_H

@@ -868,6 +868,8 @@ int config_eval_to_depth(config_t *config, int depth) {
 void
 _determine_best_eval_to_depth(config_t *config, int *best_path, int *current_path, const int total_depth, const int current_depth, piece_color_t eval_color) {
     // depth barrier
+    while (current_path != total_depth) {
+    }
     if (current_depth == total_depth) {
         if (_path_cmpr(current_path, best_path, total_depth, eval_color)) {
             // update best path
@@ -1021,4 +1023,14 @@ void _execute_all_moves(config_t *config, move_t **best_path, move_t **current_p
     free(move);
     config_dtor(tmp_conf);
     free(tmp_conf);
+}
+
+void config_play_best_move(config_t *config, int depth) {
+    move_t *best_move = move_new();
+    move_ctor(best_move);
+
+    config_determine_best_move(config, depth, best_move);
+    config_execute_move(config, best_move);
+
+    free(best_move);
 }
