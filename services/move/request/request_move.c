@@ -4,9 +4,9 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <stream_client.h>
+#include "request_move.h"
 
-void stream_client_request(int client_sd, char *fen) {
+void client_request_move(int client_sd, char *fen) {
     // post request
     size_t req_len = strlen(fen);
     int result = write(client_sd, fen, req_len);
@@ -27,4 +27,3 @@ void stream_client_request(int client_sd, char *fen) {
     }
     printf("response: %s\n", response);
 }
-

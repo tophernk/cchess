@@ -2,12 +2,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <stream_server.h>
+#include "../stream_server.h"
 
 int main(int argc, char **argv) {
     // create server socket

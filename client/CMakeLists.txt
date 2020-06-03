@@ -1,2 +1,0 @@
-add_library(cchesstcpclient STATIC stream_client.c)
-target_link_libraries(cchesstcpclient cchess pthread)

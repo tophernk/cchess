@@ -7,11 +7,9 @@
 #include <pthread.h>
 
 #include "move_service.h"
-#include "stream_server.h"
+#include "../../stream_server.h"
 
-void _exec_move(config_t *config);
-
-void *perform_cpu_move(void *arg) {
+void *request_handler(void *arg) {
     int sd = *((int *) arg);
     free((int *) arg);
     config_t *config = config_new();
@@ -61,8 +59,10 @@ void execute_best_move(config_t *config, int depth) {
                 break;
             }
             move_set_to_position(move, position);
+            // eval service
             config_execute_move(tmp_config, move, eval);
             int eval_result = config_eval_to_depth(tmp_config, depth);
+            // #####
             bool better = white_to_move ? eval_result > best_eval : eval_result < best_eval;
             if (better) {
                 move_cpy(move, best_move);
@@ -86,7 +86,7 @@ void accept_forever(int server_sd) {
         int *arg = (int *) malloc(sizeof(int));
         *arg = client_sd;
         pthread_t request_handler_thread;
-        int result = pthread_create(&request_handler_thread, NULL, perform_cpu_move, arg);
+        int result = pthread_create(&request_handler_thread, NULL, request_handler, arg);
         if (result) {
             close(client_sd);
             close(server_sd);

@@ -26,24 +26,39 @@ pipeline {
                 sh "valgrind --leak-check=full ./bot/test/ccbot_test"
             }
         }
-        stage('Docker') {
+        stage('Docker _MOVE_SERVICE_') {
             steps {
-                sh "sudo docker build -t christopherjunk/cchess ."
-                sh "sudo docker push christopherjunk/cchess"
-                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name cchess cchess"
+                sh "sudo docker build -t christopherjunk/moveservice ./services/move/"
+                sh "sudo docker push christopherjunk/moveservice"
+                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name moveservice moveservice"
             }
         }
-        stage('Acceptance Test') {
+        stage('Docker _EVAL_SERVICE_') {
+            steps {
+                sh "sudo docker build -t christopherjunk/evalservice ./services/eval/"
+                sh "sudo docker push christopherjunk/evalservice"
+                sh "sudo docker run -d --rm -p1025:1025 --network dockernet --name evalservice evalservice"
+            }
+        }
+        stage('Acceptance Test _MOVE_SERVICE_') {
             steps {
                 sleep 2
-                sh "chmod +x ./test/acceptance_test.sh"
-                sh "./test/acceptance_test.sh"
+                sh "chmod +x ./services/move/acceptance_test.sh"
+                sh "./services/move/acceptance_test.sh"
+            }
+        }
+        stage('Acceptance Test _EVAL_SERVICE_') {
+            steps {
+                sleep 2
+                sh "chmod +x ./services/eval/acceptance_test.sh"
+                sh "./services/eval/acceptance_test.sh"
             }
         }
     }
     post {
         always {
-            sh "sudo docker stop cchess"
+            sh "sudo docker stop moveservice"
+            sh "sudo docker stop evalservice"
         }
     }
 }

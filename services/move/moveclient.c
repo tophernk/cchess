@@ -6,7 +6,7 @@
 #include <netdb.h>
 #include <unistd.h>
 
-#include <stream_client.h>
+#include "request_move.h"
 
 int main(int argc, char **argv) {
     char *host;
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     }
 
     char *fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
-    stream_client_request(client_sd, fen);
+    client_request_move(client_sd, fen);
 
     return 0;
 }

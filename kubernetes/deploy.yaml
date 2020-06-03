@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   name: cchess-deployment
   labels:
-    app: cchess
+    app: moveservice
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: cchess
+      app: moveservice
   template:
     metadata:
       labels:
-        app: cchess
+        app: moveservice
     spec:
       containers:
-        - name: cchess
-          image: christopherjunk/cchess
+        - name: moveservice
+          image: christopherjunk/moveservice
           ports:
             - containerPort: 1024
