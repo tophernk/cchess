@@ -30,14 +30,14 @@ pipeline {
             steps {
                 sh "sudo docker build -t christopherjunk/moveservice ./services/move/"
                 sh "sudo docker push christopherjunk/moveservice"
-                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name moveservice moveservice"
+                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name moveservice christopherjunk/moveservice"
             }
         }
         stage('Docker _EVAL_SERVICE_') {
             steps {
                 sh "sudo docker build -t christopherjunk/evalservice ./services/eval/"
                 sh "sudo docker push christopherjunk/evalservice"
-                sh "sudo docker run -d --rm -p1025:1025 --network dockernet --name evalservice evalservice"
+                sh "sudo docker run -d --rm -p1025:1025 --network dockernet --name evalservice christopherjunk/evalservice"
             }
         }
         stage('Acceptance Test _MOVE_SERVICE_') {
