@@ -20,7 +20,7 @@ void *request_handler(void *arg) {
             break;
         }
         config_fen_in(config, buffer);
-        execute_best_move(config, 3);
+        execute_best_move(config, 2);
         char fen_out[100];
         config_fen_out(config, fen_out);
         write(sd, fen_out, 100);
@@ -31,48 +31,7 @@ void *request_handler(void *arg) {
 }
 
 void execute_best_move(config_t *config, int depth) {
-    config_t *tmp_config = config_new();
-    config_copy(config, tmp_config);
-
-    bool white_to_move = config_is_white_to_move(tmp_config);
-    int best_eval = white_to_move ? -9999 : 9999;
-    int *eval = (int *) malloc(sizeof(int));
-
-    move_t *move = move_new();
-    move_ctor(move);
-    move_t *best_move = move_new();
-    move_ctor(move);
-
-    piece_t **pieces = config_get_pieces_of_active_color(tmp_config);
-    piece_t *current_piece;
-
-    for (int i = 0; i < NUMBER_OF_PIECES; i++) {
-        current_piece = pieces[i];
-        char *currentPosition = piece_get_current_position(current_piece);
-        if (*currentPosition == '-') {
-            break;
-        }
-        move_set_from_position(move, currentPosition);
-        for (int ii = 0; ii < MAX_POSITIONS; ii++) {
-            char *position = piece_get_available_position(current_piece, ii);
-            if (*position == '-') {
-                break;
-            }
-            move_set_to_position(move, position);
-            // eval service
-            config_execute_move(tmp_config, move, eval);
-            int eval_result = config_eval_to_depth(tmp_config, depth);
-            // #####
-            bool better = white_to_move ? eval_result > best_eval : eval_result < best_eval;
-            if (better) {
-                move_cpy(move, best_move);
-            }
-            config_copy(config, tmp_config);
-        }
-    }
-    free(move);
-    free(eval);
-    free(tmp_config);
+    config_play_best_move(config, depth);
 }
 
 void accept_forever(int server_sd) {
