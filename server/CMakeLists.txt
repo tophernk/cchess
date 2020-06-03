@@ -1,2 +1,2 @@
-add_library(cchesstcpserver STATIC stream_server.c)
-target_link_libraries(cchesstcpserver cchess ccbot pthread)
+add_library(movesrv STATIC move_service.c)
+target_link_libraries(movesrv cchess pthread)

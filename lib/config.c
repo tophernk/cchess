@@ -917,7 +917,7 @@ void _execute_all_moves(config_t *config, move_t **best_path, move_t **current_p
 
         bool better = eval_color == WHITE ? current_path_eval > best_path_eval : current_path_eval < best_path_eval;
         if (better) {
-            move_cpy(current_path, best_path, max_depth);
+            path_cpy(current_path, best_path, max_depth);
         }
         return;
     }

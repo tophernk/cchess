@@ -85,7 +85,7 @@ int __move_eval(move_t **path, int depth) {
     return result;
 }
 
-void move_cpy(move_t **src, move_t **dst, int depth) {
+void path_cpy(move_t **src, move_t **dst, int depth) {
     for (int i = 0; i < depth; i++) {
         move_t *src_node = src[i];
         move_t *dst_node = dst[i];
@@ -95,4 +95,11 @@ void move_cpy(move_t **src, move_t **dst, int depth) {
         move_set_from_position(dst_node, move_get_from_position(src_node));
         move_set_to_position(dst_node, move_get_to_position(src_node));
     }
+}
+
+void move_cpy(move_t *src, move_t *dst) {
+    move_set_piece_type(dst, move_get_piece_type(src));
+    move_set_score(dst, move_get_score(src));
+    move_set_from_position(dst, move_get_from_position(src));
+    move_set_to_position(dst, move_get_to_position(src));
 }

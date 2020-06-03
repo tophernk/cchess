@@ -29,6 +29,8 @@ void move_print(move_t **path, int size);
 
 int move_cmpr(move_t **a, move_t **b, int depth);
 
-void move_cpy(move_t **src, move_t **dst, int depth);
+void path_cpy(move_t **src, move_t **dst, int depth);
+
+void move_cpy(move_t *src, move_t *dst);
 
 #endif //CCHESS_MOVE_H
