@@ -945,6 +945,7 @@ void _execute_all_moves(config_t *config, move_t **best_path, move_t **current_p
                     move_set_from_position(move, currentPosition);
                     move_set_to_position(move, available_position);
                     int *score = (int *) malloc(sizeof(int));
+                    *score = 0;
                     config_execute_move(tmp_conf, move, score);
 
                     move_t *current_path_node = current_path[current_depth];

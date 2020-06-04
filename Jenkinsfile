@@ -19,11 +19,11 @@ pipeline {
         }
         stage('Memory') {
             steps {
-                sh "valgrind --leak-check=full ./lib/test/position_test"
-                sh "valgrind --leak-check=full ./lib/test/piece_test"
-                sh "valgrind --leak-check=full ./lib/test/move_test"
-                sh "valgrind --leak-check=full ./lib/test/config_test"
-                sh "valgrind --leak-check=full ./bot/test/ccbot_test"
+                sh "valgrind --leak-check=full --track-origins=yes ./lib/test/position_test"
+                sh "valgrind --leak-check=full --track-origins=yes ./lib/test/piece_test"
+                sh "valgrind --leak-check=full --track-origins=yes ./lib/test/move_test"
+                sh "valgrind --leak-check=full --track-origins=yes ./lib/test/config_test"
+                sh "valgrind --leak-check=full --track-origins=yes ./bot/test/ccbot_test"
             }
         }
         stage('Docker EVAL SERVICE') {
