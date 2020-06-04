@@ -35,7 +35,7 @@ void *request_handler(void *arg) {
 }
 
 void execute_best_move(config_t *config, int depth) {
-    int sd = _connect("localhost", 1025);
+    int sd = _connect("evalservice", 1025);
     piece_t **pieces = config_get_pieces_of_active_color(config);
     piece_t *current_piece;
     char fen[100];
