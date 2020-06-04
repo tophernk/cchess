@@ -39,23 +39,16 @@ static void test_ccbot_move_from_standard_starting_position() {
 
 static void test_ccbot_multiple_moves() {
     config_t *config = config_new();
-    char in[100];
     config_fen_in(config, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
 
-    ccbot_execute_move(config);
-    char out[100];
-    config_fen_out(config, out);
-    assert_string_not_equal(in, out);
+    int move_executed = ccbot_execute_move(config);
+    assert_true(move_executed);
 
-    strcpy(in, out);
-    ccbot_execute_move(config);
-    config_fen_out(config, out);
-    assert_string_not_equal(in, out);
+    move_executed = ccbot_execute_move(config);
+    assert_true(move_executed);
 
-    strcpy(in, out);
-    ccbot_execute_move(config);
-    config_fen_out(config, out);
-    assert_string_not_equal(in, out);
+    move_executed = ccbot_execute_move(config);
+    assert_true(move_executed);
 
     config_dtor(config);
     free(config);

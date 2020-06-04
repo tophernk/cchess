@@ -981,16 +981,18 @@ piece_color_t _determine_eval_color(const config_t *config, int max_depth) {
     return eval_color;
 }
 
-void config_play_best_move(config_t *config, int depth) {
+int config_play_best_move(config_t *config, int depth) {
     move_t *best_move = move_new();
     move_ctor(best_move);
-    int *result = (int *) malloc(sizeof(int));
+    int *eval = (int *) malloc(sizeof(int));
 
     config_determine_best_move(config, depth, best_move);
-    config_execute_move(config, best_move, result);
+    int result = config_execute_move(config, best_move, eval);
 
-    free(result);
+    free(eval);
     free(best_move);
+
+    return result;
 }
 
 int _path_eval(move_t **path, int depth) {
