@@ -6,4 +6,4 @@ add_executable(moveclient moveclient.c)
 target_link_libraries(moveclient requestmove)
 
 add_executable(moveserver moveserver.c)
-target_link_libraries(moveserver movesrv)
+target_link_libraries(moveserver movesrv requesteval)

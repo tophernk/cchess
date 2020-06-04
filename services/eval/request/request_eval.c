@@ -10,7 +10,7 @@
 
 void _build_request(char request[111], char *fen, char *from, char *to, int depth);
 
-void client_request_eval(int client_sd, char *fen, char *from, char *to, int depth) {
+int client_request_eval(int client_sd, char *fen, char *from, char *to, int depth) {
     char request[111];
     _build_request(request, fen, from, to, depth);
     // post request
@@ -24,24 +24,28 @@ void client_request_eval(int client_sd, char *fen, char *from, char *to, int dep
     printf("request sent (%s).\n", fen);
 
     // wait for response
-    char response[100];
-    result = read(client_sd, response, 100);
+    char response[4];
+    result = read(client_sd, response, 4);
     if (result < 0) {
         fprintf(stderr, "error reading response. %s\n", strerror(errno));
     }
     if (result == 0) {
     }
+
     printf("response: %s\n", response);
+    int eval = atoi(response);
+
+    return eval;
 }
 
 void _build_request(char *request, char *fen, char *from, char *to, int depth) {
     strcpy(request, fen);
     strcat(request, REQUEST_SEPARATOR);
-    strcat(request, from);
-    strcat(request, to);
+    strncat(request, from, 2);
+    strncat(request, to, 2);
     strcat(request, REQUEST_SEPARATOR);
     char depth_str[2];
     snprintf(depth_str, 2, "%d", depth);
-    strcat(request, depth_str);
+    strncat(request, depth_str, 2);
     strcat(request, REQUEST_SEPARATOR);
 }
