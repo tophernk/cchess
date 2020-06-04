@@ -873,14 +873,16 @@ void config_determine_best_move(config_t *config, int depth, move_t *calculated_
     move_t *current_path[depth];
 
     piece_color_t eval_color = config->active_color == 'w' ? WHITE : BLACK;
+    int init_score = eval_color == WHITE ? -9999 : 9999;
 
     for (int i = 0; i < depth; i++) {
         best_path[i] = move_new();
         move_ctor(best_path[i]);
-        move_set_score(best_path[i], eval_color == WHITE ? -9999 : 9999);
+        move_set_score(best_path[i], init_score);
 
         current_path[i] = move_new();
         move_ctor(current_path[i]);
+        move_set_score(current_path[i], init_score);
     }
 
     for (int i = 0; i < depth; i++) {
