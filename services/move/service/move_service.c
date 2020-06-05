@@ -11,7 +11,18 @@
 #include "../../eval/request/request_eval.h"
 #include "../../stream_server.h"
 
+typedef struct {
+    char fen[100];
+    char from_pos[2];
+    char to_pos[2];
+    int depth;
+    bool white_to_move;
+    move_t *best_move;
+} move_eval_type_t;
+
 int _connect(const char *host, const int port);
+
+pthread_mutex_t mutex;
 
 void *request_handler(void *arg) {
     int sd = *((int *) arg);
@@ -34,8 +45,25 @@ void *request_handler(void *arg) {
     return NULL;
 }
 
-void execute_best_move(config_t *config, int depth) {
+void *eval_move(void *arg) {
+    move_eval_type_t *args = (move_eval_type_t *) arg;
     int sd = _connect("evalservice", 1025);
+    move_t *best_move = args->best_move;
+    int eval = client_request_eval(sd, args->fen, args->from_pos, args->to_pos, args->depth);
+    pthread_mutex_lock(&mutex);
+    int best_eval = move_get_score(best_move);
+    bool better = args->white_to_move ? eval > best_eval : eval < best_eval;
+    if (better) {
+        move_set_from_position(best_move, args->from_pos);
+        move_set_to_position(best_move, args->to_pos);
+        move_set_score(best_move, eval);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return NULL;
+}
+
+void execute_best_move(config_t *config, int depth) {
     piece_t **pieces = config_get_pieces_of_active_color(config);
     piece_t *current_piece;
     char fen[100];
@@ -43,30 +71,45 @@ void execute_best_move(config_t *config, int depth) {
     int best_eval = white_to_move ? -9999 : 9999;
     move_t *best_move = move_new();
     move_ctor(best_move);
+    move_set_score(best_move, best_eval);
+
+    pthread_mutex_init(&mutex, NULL);
+    move_eval_type_t args;
+    strcpy(args.fen, fen);
+    args.depth = depth;
+    args.white_to_move = white_to_move;
+    args.best_move = best_move;
+
     config_fen_out(config, fen);
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         current_piece = pieces[i];
         char *from_pos = piece_get_current_position(current_piece);
-        if(*from_pos == '-') {
+        if (*from_pos == '-') {
             break;
         }
         for (int ii = 0; ii < MAX_POSITIONS; ii++) {
             char *to_pos = piece_get_available_position(current_piece, ii);
-            if(*to_pos == '-') {
+            if (*to_pos == '-') {
                 break;
             }
-            int eval = client_request_eval(sd, fen, from_pos, to_pos, depth);
-            bool better = white_to_move ? eval > best_eval : eval < best_eval;
-            if (better) {
-                move_set_from_position(best_move, from_pos);
-                move_set_to_position(best_move, to_pos);
+            strncpy(args.from_pos, from_pos, 2);
+            strncpy(args.to_pos, to_pos, 2);
+            pthread_t thread;
+            int thread_not_created = pthread_create(&thread, NULL, eval_move, &args);
+            if (thread_not_created) {
+                fprintf(stderr, "could not start eval thread\n");
+                exit(1);
+            } else {
+                printf("thread created to eval potential move\n");
             }
         }
     }
 
     int *e = (int *) malloc(sizeof(int));
+    printf("execute best move\n");
     config_execute_move(config, best_move, e);
 
+    pthread_mutex_destroy(&mutex);
     free(e);
     free(best_move);
 }
