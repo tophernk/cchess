@@ -27,6 +27,7 @@ pthread_mutex_t mutex;
 void *request_handler(void *arg) {
     int sd = *((int *) arg);
     free((int *) arg);
+
     config_t *config = config_new();
     char buffer[100];
     while (1) {
@@ -45,7 +46,7 @@ void *request_handler(void *arg) {
     return NULL;
 }
 
-void *eval_move(void *arg) {
+void *worker_eval_move(void *arg) {
     move_eval_type_t *args = (move_eval_type_t *) arg;
     int sd = _connect("evalservice", 1025);
     move_t *best_move = args->best_move;
@@ -64,23 +65,29 @@ void *eval_move(void *arg) {
 }
 
 void execute_best_move(config_t *config, int depth) {
+    pthread_t threads[100];
+    int thread_i = 0;
+
     piece_t **pieces = config_get_pieces_of_active_color(config);
     piece_t *current_piece;
     char fen[100];
     bool white_to_move = config_is_white_to_move(config);
     int best_eval = white_to_move ? -9999 : 9999;
+
     move_t *best_move = move_new();
     move_ctor(best_move);
     move_set_score(best_move, best_eval);
 
-    pthread_mutex_init(&mutex, NULL);
+    config_fen_out(config, fen);
+
     move_eval_type_t args;
-    strcpy(args.fen, fen);
     args.depth = depth;
     args.white_to_move = white_to_move;
     args.best_move = best_move;
+    strcpy(args.fen, fen);
 
-    config_fen_out(config, fen);
+    pthread_mutex_init(&mutex, NULL);
+
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         current_piece = pieces[i];
         char *from_pos = piece_get_current_position(current_piece);
@@ -94,19 +101,20 @@ void execute_best_move(config_t *config, int depth) {
             }
             strncpy(args.from_pos, from_pos, 2);
             strncpy(args.to_pos, to_pos, 2);
-            pthread_t thread;
-            int thread_not_created = pthread_create(&thread, NULL, eval_move, &args);
+            int thread_not_created = pthread_create(&threads[thread_i++], NULL, worker_eval_move, &args);
             if (thread_not_created) {
                 fprintf(stderr, "could not start eval thread\n");
                 exit(1);
-            } else {
-                printf("thread created to eval potential move\n");
             }
         }
     }
 
+    // wait for workers to finish
+    for(int i = 0; i < thread_i; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
     int *e = (int *) malloc(sizeof(int));
-    printf("execute best move\n");
     config_execute_move(config, best_move, e);
 
     pthread_mutex_destroy(&mutex);
