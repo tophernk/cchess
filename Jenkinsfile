@@ -53,7 +53,7 @@ pipeline {
                 sleep 2
                 sh "chmod +x ./services/move/acceptance_test.sh"
                 //sh "./services/move/acceptance_test.sh"
-                sh "./services/move/moveclient moveservice)"
+                sh "./services/move/moveclient moveservice"
             }
         }
     }
