@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     }
 
     char *fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
-    client_request_eval(client_sd, fen, "e2", "e4", 2);
+    client_request_eval(client_sd, fen, 2);
 
     return 0;
 }

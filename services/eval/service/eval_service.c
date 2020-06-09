@@ -11,22 +11,15 @@
 
 #define REQUEST_SEPARATOR "#"
 
-int eval_move(config_t *config, move_t *move, int depth) {
-    int *eval = (int *) malloc(sizeof(int));
-    config_execute_move(config, move, eval);
+int eval_board(config_t *config, int depth) {
     int eval_result = config_eval_to_depth(config, depth);
-    free(eval);
     return eval_result;
 }
 
-void eval_req_to_args(char *request, config_t *config, move_t *move, int *depth) {
+void eval_req_to_args(char *request, config_t *config, int *depth) {
     // fen part
     char *req_fen = strsep(&request, REQUEST_SEPARATOR);
     config_fen_in(config, req_fen);
-    // move part
-    char *req_move = strsep(&request, REQUEST_SEPARATOR);
-    move_set_from_position(move, req_move);
-    move_set_to_position(move, &req_move[2]);
     // depth part
     char *req_depth = strsep(&request, REQUEST_SEPARATOR);
     *depth = atoi(req_depth);
@@ -51,8 +44,8 @@ void *request_handler(void *arg) {
         if (result == 0 || result == -1) {
             break;
         }
-        eval_req_to_args(buffer, config, move, depth);
-        int eval_result = eval_move(config, move, *depth);
+        eval_req_to_args(buffer, config, depth);
+        int eval_result = eval_board(config, *depth);
         char response[4];
         eval_result_to_rsp(response, eval_result);
         write(sd, response, 4);

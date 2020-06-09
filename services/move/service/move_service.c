@@ -50,7 +50,7 @@ void *worker_eval_move(void *arg) {
     move_eval_type_t *args = (move_eval_type_t *) arg;
     int sd = _connect("evalservice", 1025);
     move_t *best_move = args->best_move;
-    int eval = client_request_eval(sd, args->fen, args->from_pos, args->to_pos, args->depth);
+    int eval = client_request_eval(sd, args->fen, args->depth);
     pthread_mutex_lock(&mutex);
     int best_eval = move_get_score(best_move);
     bool better = args->white_to_move ? eval > best_eval : eval < best_eval;
@@ -68,6 +68,10 @@ void execute_best_move(config_t *config, int depth) {
     pthread_t threads[100];
     int thread_i = 0;
 
+    config_t *tmp_config = config_new();
+    config_ctor(tmp_config);
+    config_copy(config, tmp_config);
+
     piece_t **pieces = config_get_pieces_of_active_color(config);
     piece_t *current_piece;
     char fen[100];
@@ -78,6 +82,9 @@ void execute_best_move(config_t *config, int depth) {
     move_ctor(best_move);
     move_set_score(best_move, best_eval);
 
+    move_t *current_move = move_new();
+    move_ctor(current_move);
+
     config_fen_out(config, fen);
 
     move_eval_type_t args;
@@ -87,6 +94,7 @@ void execute_best_move(config_t *config, int depth) {
     strcpy(args.fen, fen);
 
     pthread_mutex_init(&mutex, NULL);
+    int *eval = (int *) malloc(sizeof(int));
 
     for (int i = 0; i < NUMBER_OF_PIECES; i++) {
         current_piece = pieces[i];
@@ -99,26 +107,33 @@ void execute_best_move(config_t *config, int depth) {
             if (*to_pos == '-') {
                 break;
             }
+
             strncpy(args.from_pos, from_pos, 2);
             strncpy(args.to_pos, to_pos, 2);
+            move_set_from_position(current_move, from_pos);
+            move_set_to_position(current_move, to_pos);
+
+            config_execute_move(tmp_config, current_move, eval);
+
             int thread_not_created = pthread_create(&threads[thread_i++], NULL, worker_eval_move, &args);
             if (thread_not_created) {
                 fprintf(stderr, "could not start eval thread\n");
                 exit(1);
             }
+            config_copy(config, tmp_config);
         }
     }
 
     // wait for workers to finish
-    for(int i = 0; i < thread_i; i++) {
+    for (int i = 0; i < thread_i; i++) {
         pthread_join(threads[i], NULL);
     }
 
-    int *e = (int *) malloc(sizeof(int));
-    config_execute_move(config, best_move, e);
+    config_execute_move(config, best_move, eval);
 
     pthread_mutex_destroy(&mutex);
-    free(e);
+    free(eval);
+    free(current_move);
     free(best_move);
 }
 
