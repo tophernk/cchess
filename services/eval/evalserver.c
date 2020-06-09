@@ -31,7 +31,7 @@ int main() {
     }
 
     // listen with backlog
-    result = listen(server_sd, 10);
+    result = listen(server_sd, 100);
     if (result == -1) {
         close(server_sd);
         fprintf(stderr, "listen for incoming connections failed: %s\n", strerror(errno));
