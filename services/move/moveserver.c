@@ -8,7 +8,7 @@
 
 #include "../stream_server.h"
 
-int main(int argc, char **argv) {
+int main() {
     // create server socket
     int server_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sd == -1) {
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
 
     // listen with backlog
-    result = listen(server_sd, 10);
+    result = listen(server_sd, 100);
     if (result == -1) {
         close(server_sd);
         fprintf(stderr, "listen for incoming connections failed: %s\n", strerror(errno));

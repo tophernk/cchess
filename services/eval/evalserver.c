@@ -8,7 +8,7 @@
 
 #include "../stream_server.h"
 
-int main(int argc, char **argv) {
+int main() {
     // create server socket
     int server_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sd == -1) {

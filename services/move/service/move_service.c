@@ -85,13 +85,10 @@ void execute_best_move(config_t *config, int depth) {
     move_t *current_move = move_new();
     move_ctor(current_move);
 
-    config_fen_out(config, fen);
-
     move_eval_type_t args;
     args.depth = depth;
     args.white_to_move = white_to_move;
     args.best_move = best_move;
-    strcpy(args.fen, fen);
 
     pthread_mutex_init(&mutex, NULL);
     int *eval = (int *) malloc(sizeof(int));
@@ -114,6 +111,9 @@ void execute_best_move(config_t *config, int depth) {
             move_set_to_position(current_move, to_pos);
 
             config_execute_move(tmp_config, current_move, eval);
+            memset(fen, 0, 100);
+            config_fen_out(tmp_config, fen);
+            strcpy(args.fen, fen);
 
             int thread_not_created = pthread_create(&threads[thread_i++], NULL, worker_eval_move, &args);
             if (thread_not_created) {
