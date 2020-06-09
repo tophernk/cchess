@@ -49,9 +49,9 @@ void *request_handler(void *arg) {
 void *worker_eval_move(void *arg) {
     move_eval_type_t *args = (move_eval_type_t *) arg;
     int sd = _connect("evalservice", 1025);
-    move_t *best_move = args->best_move;
     int eval = client_request_eval(sd, args->fen, args->depth);
     pthread_mutex_lock(&mutex);
+    move_t *best_move = args->best_move;
     int best_eval = move_get_score(best_move);
     bool better = args->white_to_move ? eval > best_eval : eval < best_eval;
     if (better) {
@@ -74,7 +74,6 @@ void execute_best_move(config_t *config, int depth) {
 
     piece_t **pieces = config_get_pieces_of_active_color(config);
     piece_t *current_piece;
-    char fen[100];
     bool white_to_move = config_is_white_to_move(config);
     int best_eval = white_to_move ? -9999 : 9999;
 
@@ -85,10 +84,7 @@ void execute_best_move(config_t *config, int depth) {
     move_t *current_move = move_new();
     move_ctor(current_move);
 
-    move_eval_type_t args;
-    args.depth = depth;
-    args.white_to_move = white_to_move;
-    args.best_move = best_move;
+    move_eval_type_t args[100];
 
     pthread_mutex_init(&mutex, NULL);
     int *eval = (int *) malloc(sizeof(int));
@@ -105,17 +101,22 @@ void execute_best_move(config_t *config, int depth) {
                 break;
             }
 
-            strncpy(args.from_pos, from_pos, 2);
-            strncpy(args.to_pos, to_pos, 2);
             move_set_from_position(current_move, from_pos);
             move_set_to_position(current_move, to_pos);
 
             config_execute_move(tmp_config, current_move, eval);
-            memset(fen, 0, 100);
-            config_fen_out(tmp_config, fen);
-            strcpy(args.fen, fen);
 
-            int thread_not_created = pthread_create(&threads[thread_i++], NULL, worker_eval_move, &args);
+            char fen[100];
+            config_fen_out(tmp_config, fen);
+            strcpy(args[thread_i].fen, fen);
+            strncpy(args[thread_i].from_pos, from_pos, 2);
+            strncpy(args[thread_i].to_pos, to_pos, 2);
+            args[thread_i].depth = depth;
+            args[thread_i].white_to_move = white_to_move;
+            args[thread_i].best_move = best_move;
+
+            int thread_not_created = pthread_create(&threads[thread_i], NULL, worker_eval_move, &args[thread_i]);
+            thread_i++;
             if (thread_not_created) {
                 fprintf(stderr, "could not start eval thread\n");
                 exit(1);
