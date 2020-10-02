@@ -1,5 +1,8 @@
 pipeline {
    agent any
+   triggers {
+        cron('H/2 * * * *')
+   }
    stages {
         stage('Checkout') {
             steps {
@@ -28,16 +31,16 @@ pipeline {
         }
         stage('Docker EVAL SERVICE') {
             steps {
-                sh "sudo docker build -t christopherjunk/evalservice ./services/eval/"
-                sh "sudo docker push christopherjunk/evalservice"
-                sh "sudo docker run -d --rm -p1025:1025 --network dockernet --name evalservice christopherjunk/evalservice"
+                sh "docker build -t christopherjunk/evalservice ./services/eval/"
+                sh "docker push christopherjunk/evalservice"
+                sh "docker run -d --rm -p1025:1025 --network dockernet --name evalservice christopherjunk/evalservice"
             }
         }
         stage('Docker MOVE SERVICE') {
             steps {
-                sh "sudo docker build -t christopherjunk/moveservice ./services/move/"
-                sh "sudo docker push christopherjunk/moveservice"
-                sh "sudo docker run -d --rm -p1024:1024 --network dockernet --name moveservice christopherjunk/moveservice"
+                sh "docker build -t christopherjunk/moveservice ./services/move/"
+                sh "docker push christopherjunk/moveservice"
+                sh "docker run -d --rm -p1024:1024 --network dockernet --name moveservice christopherjunk/moveservice"
             }
         }
         stage('Acceptance Test EVAL SERVICE') {
@@ -59,8 +62,8 @@ pipeline {
     }
     post {
         always {
-            sh "sudo docker stop moveservice"
-            sh "sudo docker stop evalservice"
+            sh "docker stop moveservice"
+            sh "docker stop evalservice"
         }
     }
 }
