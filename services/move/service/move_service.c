@@ -48,7 +48,15 @@ void *request_handler(void *arg) {
 
 void *worker_eval_move(void *arg) {
     move_eval_type_t *args = (move_eval_type_t *) arg;
-    int sd = _connect("evalservice", 1025);
+
+    int sd = -1;
+    while (sd == -1) {
+        sd = _connect("evalservice", 1025);
+        if(sd == -1) {
+            sleep(1);
+        }
+    }
+
     int eval = client_request_eval(sd, args->fen, args->depth);
     pthread_mutex_lock(&mutex);
     move_t *best_move = args->best_move;
@@ -151,7 +159,7 @@ int _connect(const char *host, const int port) {
     host_entry = gethostbyname(host);
     if (!host_entry) {
         fprintf(stderr, "could not resolve host name %s\n", host);
-        exit(1);
+        return -1;
     }
     // prep socket
 
@@ -166,7 +174,7 @@ int _connect(const char *host, const int port) {
     if (result == -1) {
         close(sd);
         fprintf(stderr, "could not connect to server %s\n", strerror(errno));
-        exit(1);
+        return -1;
     }
     return sd;
 }
