@@ -46,6 +46,7 @@ void *request_handler(void *arg) {
         }
         eval_req_to_args(buffer, config, depth);
         int eval_result = eval_board(config, *depth);
+        printf("eval=%d\n", eval_result);
         char response[4];
         eval_result_to_rsp(response, eval_result);
         write(sd, response, 4);
