@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cchess-deployment
+  name: moveservice
   labels:
-    app: moveservice
+    run: moveservice 
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: moveservice
+      run: moveservice 
   template:
     metadata:
       labels:
-        app: moveservice
+        run: moveservice 
     spec:
       containers:
         - name: moveservice
