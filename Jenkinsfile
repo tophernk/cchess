@@ -40,7 +40,7 @@ pipeline {
             steps {
                 sh "docker build -t christopherjunk/moveservice ./services/move/"
                 sh "docker push christopherjunk/moveservice"
-                sh "docker run -d --rm -p1024:1024 -v $(pwd):/moveservice-logs --network dockernet --name moveservice christopherjunk/moveservice"
+                sh "docker run -d --rm -p1024:1024 -v ${env.WORKSPACE}/logs:/moveservice-logs --network dockernet --name moveservice christopherjunk/moveservice"
             }
         }
         stage('Acceptance Test EVAL SERVICE') {
