@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: moveservice
   labels:
-    run: moveservice 
+    run: moveservice
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: moveservice 
+      run: moveservice
   template:
     metadata:
       labels:
-        run: moveservice 
+        run: moveservice
     spec:
       containers:
         - name: moveservice

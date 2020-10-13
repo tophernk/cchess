@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+        name: jenkins
+spec:
+        replicas: 1
+        template:
+                spec:
+                        containers:
+                        - name: jenkins
+                          image: christopherjunk/jenkins
+                          command: ["jar"]
+                          args: ["-jar", "/var/jenkins/jenkins.war"]
+                          ports:
+                          - containerPort: 8080
+                        restartPolicy: OnFailure
