@@ -2,17 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: evalservice
-  labels:
-    run: evalservice
 spec:
   replicas: 3
-  selector:
-    matchLabels:
-      run: evalservice
   template:
-    metadata:
-      labels:
-        run: evalservice
     spec:
       containers:
         - name: evalservice

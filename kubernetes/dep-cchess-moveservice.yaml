@@ -2,20 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: moveservice
-  labels:
-    run: moveservice
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      run: moveservice
   template:
-    metadata:
-      labels:
-        run: moveservice
     spec:
+      volumes:
+        - name: vol
+          persistentVolumeClaim:
+            claimName: moveservice
       containers:
         - name: moveservice
           image: christopherjunk/moveservice
           ports:
             - containerPort: 1024
+          volumeMounts:
+          - mountPath: /moveservice-logs
+            name: vol

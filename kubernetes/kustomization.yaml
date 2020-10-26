@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - dep-cchess-evalservice.yaml
+  - dep-cchess-moveservice.yaml
+  - svc-cchess-evalservice.yaml
+  - svc-cchess-moveservice.yaml
+  - pv-node-a-cchess-logs.yaml
+  - pv-node-b-cchess-logs.yaml
+  - pvc-cchess-moveservice.yaml
+namespace: default
+commonLabels:
+  app: cchess
+  env: test
