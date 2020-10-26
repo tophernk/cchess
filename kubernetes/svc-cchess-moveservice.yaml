@@ -4,8 +4,6 @@ metadata:
   name: moveservice
 spec:
   type: NodePort
-  selector:
-    run: moveservice
   ports:
     - protocol: TCP
       port: 1024
